@@ -3,6 +3,7 @@ import "./globals.css";
 import { StoreProvider } from "@/src/store/StoreProvider";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import Providers from "./Provider";
+import PageTransition from "@/components/PageTransition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,9 +27,11 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          {/* <PageTransition> */}
           <main className="light text-foreground bg-background">
             {children}
           </main>
+          {/* </PageTransition> */}
         </Providers>
 
       </body>

@@ -3,6 +3,7 @@ import { Button, user } from "@heroui/react";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import VerticalStep from "@/components/VerticalStep";
+import { useState } from "react";
 
 const steps = [
     {
@@ -34,12 +35,14 @@ const steps = [
 
 export default function GetStarted() {
     const router = useRouter();
+    const [isNavigating, setIsNavigating] = useState(false);
 
     const handleBack = () => {
         router.back();
     };
     
     const handleContinue=()=>{
+        setIsNavigating(true);
         router.push('/upload');
     }
 
@@ -67,6 +70,7 @@ export default function GetStarted() {
 
             <div className="mt-auto pb-6">
                 <Button
+                    isLoading={isNavigating}
                     onPress={handleContinue}
                     className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-xl text-lg shadow-lg active:scale-95 transition-transform"
                 >

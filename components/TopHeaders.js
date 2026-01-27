@@ -1,22 +1,23 @@
 import { Avatar, Badge, Input } from "@heroui/react";
 import { Search, Bell } from "lucide-react";
+import Link from "next/link";
 
 export default function TopHeader() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                    <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026704d" size="md" />
+                <Link href='/profile' alit="profile" className="flex items-center gap-3 active:opacity-80 transition-opacity">
+                     <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026704d" size="md" />
                     <div className="text-white">
                         <h1 className="text-xl font-bold">Hi, Bala</h1>
                         <p className="text-sm opacity-80">Welcome Back</p>
                     </div>
+                </Link>
                 </div>
-                {/* <Badge color="primary" content="5"> */}
                 <div className="bg-white/20 p-2 rounded-full">
                     <Bell className="text-white" size={24} />
                 </div>
-                {/* </Badge> */}
             </div>
 
             <div className="flex justify-center items-center">
