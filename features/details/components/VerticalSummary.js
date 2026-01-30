@@ -1,74 +1,97 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion"; 
+import React from "react";
+import { Accordion, AccordionItem } from "@heroui/react";
 
-export default function VerticalSummary() {
-  const formData = useSelector((state) => state.details);
-  const [expandedSection, setExpandedSection] = useState("Patient Details");
+export default function VerticalSummary({ data, onEdit }) {
+  if (!data) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No data available to display
+      </div>
+    );
+  }
 
   const sections = [
     { 
+      key: "patient",
       title: "Patient Details", 
-      data: formData?.patient || {} 
+      data: data.patient || {},
+      step: 1,
     },
     { 
+      key: "insured",
       title: "Insured Details", 
-      data: formData?.insured?.isSameAsPatient 
+      data: data.insured?.isSameAsPatient 
         ? { Status: "Same as Patient" } 
-        : formData?.insured || {} 
+        : (data.insured || {}),
+      step: 2,
     },
     { 
+      key: "policy",
       title: "Policy Details", 
-      data: formData?.policy || {} 
+      data: data.policy || {},
+      step: 6,
     },
   ];
 
   return (
     <div className="relative">
-      <div className="absolute left-[11px] top-2 bottom-2 w-[2px] bg-[#1DA1FA]" />
-      <div className="space-y-4">
-        {sections.map((section, idx) => {
-          const isExpanded = expandedSection === section.title;
-          return (
-            <div key={idx} className="relative pl-10">
-              <div 
-                className="cursor-pointer flex items-center group"
-                onClick={() => setExpandedSection(isExpanded ? null : section.title)}
-              >
-                <div className="absolute left-0 top-0 w-6 h-6 rounded-full bg-[#1DA1FA] border-[4px] border-white ring-1 ring-[#1DA1FA] z-10 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                </div>
-                <h3 className={`font-bold transition-colors ${isExpanded ? 'text-gray-900' : 'text-gray-500'}`}>
-                  {section.title}
-                </h3>
-              </div>
+      <div className="absolute left-3 top-8 bottom-8 w-[2px] bg-[#1DA1FA]" />
 
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="mt-4 mb-6 bg-[#F8FAFC] rounded-2xl p-5 border border-blue-50 space-y-4">
-                      {Object.entries(section.data || {}).map(([key, value]) => (
-                        value && key !== "isSameAsPatient" && (
-                          <div key={key} className="flex flex-col border-b border-gray-100 last:border-0 pb-2">
-                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-black">
-                              {key.replace(/([A-Z])/g, ' $1')}
-                            </span>
-                            <span className="text-[14px] text-gray-700 font-semibold">
-                              {String(value)}
-                            </span>
-                          </div>
-                        )
-                      ))}
+      <div className="space-y-0">
+        {sections.map((section, idx) => {
+          const hasData = Object.keys(section.data).filter(
+            key => key !== "isSameAsPatient" && section.data[key]
+          ).length > 0;
+
+          return (
+            <Accordion 
+              key={section.key}
+              variant="light"
+              defaultExpandedKeys={idx === 0 ? [section.key] : []}
+              className="px-0"
+            >
+              <AccordionItem
+                key={section.key}
+                aria-label={section.title}
+                className="relative pl-12"
+                classNames={{
+                  trigger: "py-4 px-0",
+                  title: "text-base font-bold",
+                  content: "pb-6 pt-2 px-0",
+                  indicator: "text-gray-400"
+                }}
+                title={
+                  <div className="flex items-center">
+                    <div className="absolute left-0 top-4 w-6 h-6 rounded-full bg-[#1DA1FA] z-10 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full" />
                     </div>
-                  </motion.div>
+                    
+                    <span className="text-gray-900 font-bold">{section.title}</span>
+                  </div>
+                }
+              >
+                {hasData ? (
+                  <div className="space-y-2">
+                    {Object.entries(section.data).map(([key, value]) => (
+                      value && key !== "isSameAsPatient" && (
+                        <div key={key} className="flex flex-col gap-1 pb-2">
+                          <span className="text-[11px] text-gray-500 font-semibold">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                          </span>
+                          <span className="text-[14px] text-gray-900 font-normal">
+                            {value}
+                          </span>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-400 italic">
+                    No data entered yet
+                  </div>
                 )}
-              </AnimatePresence>
-            </div>
+              </AccordionItem>
+            </Accordion>
           );
         })}
       </div>

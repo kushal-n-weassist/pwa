@@ -1,17 +1,42 @@
-import React from "react";
-import { Button, Modal, ModalContent, ModalBody, useDisclosure } from "@heroui/react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { Button, Card, CardBody } from "@heroui/react";
 import VerticalSummary from "./VerticalSummary";
 
-export default function SubmitRequestPage({ onEdit }) {
+export default function SubmitRequest({ onEdit }) {
   const allData = useSelector((state) => state.details);
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [showPreview, setShowPreview] = useState(false);
+
+  const handleEdit = () => {
+    if (onEdit) onEdit(1); 
+  };
+
+  if (showPreview) {
+    return (
+      <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+        <Card className="shadow-none border border-gray-100 rounded-[24px] bg-white">
+          <CardBody className="p-6">
+            <VerticalSummary data={allData} />
+          </CardBody>
+        </Card>
+
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/90 backdrop-blur-md z-50">
+          <Button 
+            onPress={() => setShowPreview(false)}
+            className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-xl text-lg shadow-lg active:scale-95 transition-transform"
+          >
+            Back to Submit
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="bg-white rounded-[24px] p-8 shadow-sm border border-gray-100 border-b-4">
-        <div className="flex flex-col gap-4">
-          <h2 className="text-[20px] font-extrabold text-gray-900 leading-tight">
+      <Card className="shadow-none border border-gray-100 rounded-[24px] bg-white">
+        <CardBody className="p-8 text-center flex flex-col gap-4">
+          <h2 className="text-[20px] font-extrabold text-gray-900">
             Submit your request
           </h2>
           <p className="text-[13px] text-gray-500 font-medium leading-relaxed">
@@ -21,61 +46,29 @@ export default function SubmitRequestPage({ onEdit }) {
             </span>
           </p>
 
-          <div className="flex gap-4 pt-2">
-            <Button
-              onPress={onOpen}
-              variant="bordered"
-              className="flex-1 border-[#1DA1FA] text-[#1DA1FA] rounded-full font-bold h-11 text-[14px]"
+          <div className="flex justify-center gap-4 mt-2">
+            <Button 
+              onPress={() => setShowPreview(true)}
+              variant="bordered" 
+              className="border-[#1DA1FA] text-[#1DA1FA] rounded-full px-8 font-bold h-10"
             >
               Preview
             </Button>
-            <Button
-              onPress={onEdit}
-              variant="bordered"
-              className="flex-1 border-gray-400 text-gray-700 rounded-full font-bold h-11 text-[14px]"
+            <Button 
+              onPress={handleEdit}
+              variant="bordered" 
+              className="border-gray-900 text-gray-900 rounded-full px-8 font-bold h-10"
             >
               Edit
             </Button>
           </div>
-        </div>
-      </div>
+        </CardBody>
+      </Card>
 
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        scrollBehavior="inside"
-        size="full"
-        portalContainer={typeof window !== "undefined" ? document.body : null}
-        classNames={{
-          base: "m-0 sm:m-4 rounded-t-[32px] sm:rounded-[32px] bg-[#F8FAFC]",
-          wrapper: "z-[9999]", // High z-index to beat the footer
-          backdrop: "bg-black/50 backdrop-blur-sm z-[9998]",
-        }}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalBody className="p-6 pt-12">
-                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
-                  <VerticalSummary formData={allData} />
-                </div>
-
-                <Button
-                  onPress={onClose}
-                  className="w-full mt-6 bg-[#1DA1FA] text-white font-extrabold h-14 rounded-2xl text-[16px]"
-                >
-                  Back to Submit
-                </Button>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
-      <div className="fixed bottom-8 left-0 right-0 px-6">
-        <Button
-          className="w-full bg-[#1DA1FA] text-white font-extrabold h-14 rounded-2xl text-[16px] shadow-lg shadow-blue-200"
-          onPress={() => console.log("Final Data Submitted:", allData)}
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md z-50">
+        <Button 
+          className="w-full max-w-md mx-auto flex bg-[#1DA1FA] text-white font-extrabold h-14 rounded-2xl text-lg shadow-lg"
+          onPress={() => console.log("Final Submission:", allData)}
         >
           Continue
         </Button>

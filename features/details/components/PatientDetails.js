@@ -1,8 +1,6 @@
 import { Input, Select, SelectItem } from "@heroui/react";
-import { CalendarIcon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateField } from "../store/detailsSlice"; 
-import { useEffect } from "react";
 
 export default function PatientDetails() {
   const dispatch = useDispatch();
@@ -51,7 +49,6 @@ export default function PatientDetails() {
       </div>
 
       <div className="flex flex-col gap-4">
-        {/* Full Name */}
         <div>
           <CustomLabel>Full Name</CustomLabel>
           <Input
@@ -63,7 +60,6 @@ export default function PatientDetails() {
           />
         </div>
 
-        {/* DOB + Gender */}
         <div className="flex gap-3">
           <div className="flex-1">
             <CustomLabel>Date of birth</CustomLabel>
@@ -92,7 +88,6 @@ export default function PatientDetails() {
           </div>
         </div>
 
-        {/* Pin Code + Area */}
         <div className="flex gap-3">
           <div className="flex-1">
             <CustomLabel>Pin Code</CustomLabel>
@@ -118,7 +113,6 @@ export default function PatientDetails() {
           </div>
         </div>
 
-        {/* City + State */}
         <div className="flex gap-3">
           <div className="flex-1">
             <CustomLabel>City</CustomLabel>
@@ -142,7 +136,6 @@ export default function PatientDetails() {
           </div>
         </div>
 
-        {/* Address Lines */}
         <div>
           <CustomLabel>Address line 1</CustomLabel>
           <Input

@@ -15,6 +15,7 @@ export default function FillDetailsPage() {
 
   const handleNext = () => setStep((prev) => Math.min(prev + 1, 7));
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
+  const handleEdit = (stepNumber) => setStep(stepNumber); 
 
   const renderStep = () => {
     switch (step) {
@@ -24,7 +25,7 @@ export default function FillDetailsPage() {
       case 4: return <IdentityContact />;
       case 5: return <BankingDetails />;
       case 6: return <PolicyDetails />;
-      case 7: return <SubmitRequest />;
+      case 7: return <SubmitRequest onEdit={handleEdit} />; 
       default: return <PatientDetails />;
     }
   };

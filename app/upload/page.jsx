@@ -10,18 +10,18 @@ export default function UploadDocuments() {
     const [isSameAsInsured, setIsSameAsInsured] = useState(false);
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative">
-            <div className="bg-white px-6 pt-12 pb-4 flex items-center gap-4">
+        <div className="min-h-screen bg-[#F5F5F5] flex flex-col relative">
+            <div className=" px-6 pt-12 pb-4 flex items-center gap-4">
                 <button onClick={() => router.back()} className="p-1">
                     <ChevronLeft size={24} className="text-gray-800" />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 flex-1 text-center mr-8">
+                <h1 className="text-xl bg-[#F5F5F5] font-bold text-gray-900 flex-1 text-center mr-8">
                     Upload Documents
                 </h1>
             </div>
 
-            <div className="p-6 flex-grow bg-white">
-                <Card className="shadow-md border-none rounded-[24px]">
+            <div className="p-6 flex-grow bg-[#F5F5F5]">
+                <Card className="shadow-md border-none bg-[#FFFFFF] rounded-[24px]">
                     <CardBody className="gap-6 p-6">
 
                         <UploadField label="Patient Aadhar Card" />
@@ -34,7 +34,7 @@ export default function UploadDocuments() {
                                     className="mb-3"
                                     isSelected={isSameAsInsured}
                                     onValueChange={setIsSameAsInsured}
-                                    size="lg"
+                                    size="sm"
                                     classNames={{
                                         wrapper: "after:bg-[#1DA1FA]"
                                         
@@ -68,7 +68,7 @@ export default function UploadDocuments() {
 
 function UploadField({ label }) {
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 bg-[#FFFFFF]">
             <label className="text-sm font-semibold text-gray-700">{label}</label>
             <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 bg-gray-50/50 active:bg-gray-100 transition-colors cursor-pointer">
                 <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-[#1DA1FA]">

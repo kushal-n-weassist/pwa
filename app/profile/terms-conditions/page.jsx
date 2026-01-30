@@ -22,8 +22,9 @@ All such Apps, together with Websites visited, accessed, or used by users includ
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
-      <div className="bg-white px-6 pt-12 pb-4 flex items-center justify-between sticky top-0 z-30">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-roboto font-light">
+      {/* Header */}
+      <div className="bg-white px-6 pt-12 pb-4 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50">
         <button onClick={() => router.back()} className="p-1 active:opacity-50">
           <ChevronLeft size={24} className="text-gray-800" />
         </button>
@@ -32,7 +33,7 @@ All such Apps, together with Websites visited, accessed, or used by users includ
       </div>
 
       <div className="p-6 flex flex-col gap-6 overflow-y-auto pb-10">
-        <p className="text-md text-gray-600 leading-relaxed text-justify">
+        <p className="text-[14px] text-gray-600 leading-relaxed text-justify font-normal">
           {introText}
         </p>
 
@@ -40,30 +41,34 @@ All such Apps, together with Websites visited, accessed, or used by users includ
           variant="highlight"
           className="px-0 flex flex-col gap-3"
           selectionMode="multiple"
+          // Ensures the overall accordion doesn't force centering
+          fullWidth
         >
           {accordionData.map((item) => (
             <AccordionItem
               key={item.id}
               aria-label={item.title}
               title={
-                <span className="text-white text-[13px] font-bold leading-tight">
+                <span className="text-white text-[13px] font-bold leading-tight text-left block">
                   {item.title}
                 </span>
               }
               indicator={({ isOpen }) => (
-                <div className="bg-white/30 p-1 rounded-md">
+                <div className="bg-white/20 p-1.5 rounded-lg shrink-0">
                    <Plus 
-                    size={18} 
+                    size={16} 
                     className={`text-white transition-transform duration-300 ${isOpen ? 'rotate-45' : ''}`} 
                   />
                 </div>
               )}
               classNames={{
-                base: "bg-[#1DA1FA] rounded-[14px] px-4 py-2 shadow-md",
-                titleWrapper: "flex-1",
-                content: "text-white/90 text-sm py-3 border-t border-white/20 mt-2",
-                trigger: "py-2 px-0 focus:outline-none",
-                indicator: "ml-2"
+                base: "bg-[#1DA1FA] rounded-[16px] px-4 py-1.5 shadow-sm border border-blue-400/20",
+                // titleWrapper set to text-left to align the question
+                titleWrapper: "text-left flex-1 py-2",
+                // trigger ensures flex items are aligned to the start/left
+                trigger: "flex flex-row items-center justify-between gap-3 focus:outline-none",
+                content: "text-white/90 text-[13px] py-4 border-t border-white/10 mt-1 leading-relaxed",
+                indicator: "transition-none"
               }}
             >
               This is dummy content for the Terms of Use section. You can replace 
