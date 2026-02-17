@@ -9,6 +9,8 @@ import IdentityContact from "@/features/details/components/IdentityContact";
 import BankingDetails from "@/features/details/components/BankingDetails";
 import PolicyDetails from "@/features/details/components/PolicyDetails";
 import SubmitRequest from "@/features/details/components/SubmitRequest";
+import { useSelector } from "react-redux";
+
 
 export default function FillDetailsPage() {
   const [step, setStep] = useState(1);

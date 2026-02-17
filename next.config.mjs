@@ -11,6 +11,14 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://octa.weassist.co.in/api/:path*', 
+      },
+    ];
+  },
 };
 
 export default withPWA(nextConfig);

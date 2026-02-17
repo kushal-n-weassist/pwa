@@ -1,11 +1,14 @@
 // components/Dashboard.js
+"use client";
 import TopHeader from "@/components/TopHeaders";
 import CustomStepper from "@/components/CustomStepper";
 import QuickAccess from "@/components/QuickAccess";
 import SSRSection from "@/components/SSRSection";
 import BottomNav from "@/components/BottomNav";
+import { useSelector } from "react-redux";
 
 export default function Dashboard() {
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#018FDE] to-[#008FDF] flex flex-col font-sans">
       <div className="px-6 pt-12 pb-8">

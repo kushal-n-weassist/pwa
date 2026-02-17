@@ -1,183 +1,100 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Input, Button, Divider, cn } from "@heroui/react";
-import { FaGoogle, FaFacebook, FaLinkedin, FaEyeSlash, FaEye } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import Link from "next/link";
-import { setLoginField, loginUser } from "../../login/store/loginSlice";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { addToast } from "@heroui/react";
 
-export const loginSchema = z.object({
-    username: z.string().min(1, "Username is required"),
-    password: z.string().min(1, "Password is required"),
+import React, { useState, useEffect } from "react";
+import { Input, Button, Divider } from "@heroui/react";
+import { FaGoogle, FaFacebook, FaLinkedin } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { setLoginField, generateLoginOtp } from "../../login/store/loginSlice";
+import { z } from "zod";
+import toast from "react-hot-toast";
+import BouncingDots from "@/components/BouncingDots";
+
+
+const loginSchema = z.object({
+    email: z
+        .string()
+        .min(1, "Email address is required")
+        .email("Please enter a valid email address"),
 });
 
-export default function LoginForm() {
-    const { isAuthenticated, error } = useSelector((state) => state.login);
-    const router = useRouter();
-    const dispatch = useDispatch();
-    const { username, password, loading } = useSelector(
-        (state) => state.login
-    );
-    const [showpassord, setShowpassword] = useState(false);
-    const [fieldErrors, setFieldErrors] = useState({});
 
-    const handleLogin = () => {
-        const result = loginSchema.safeParse({
-            username: username?.trim(),
-            password: password?.trim(),
-        });
+
+
+export default function LoginForm() {
+    const dispatch = useDispatch();
+    const router = useRouter();
+
+    const { email, loading } = useSelector((state) => state.login);
+    const [emailError, setEmailError] = useState("");
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
+    const hasError = !!emailError;
+
+    const handleContinue = async () => {
+        const result = loginSchema.safeParse({ email: email?.trim() ?? "" });
 
         if (!result.success) {
-            const errors = {};
-            result.error.issues.forEach((issue) => {
-                const fieldName = issue.path[0];
-                if (!errors[fieldName]) {
-                    errors[fieldName] = issue.message;
-                }
-            });
-
-            setFieldErrors(errors);
-            console.log("the fiels error", fieldErrors);
+            setEmailError(result.error.issues[0].message);
             return;
         }
 
-        setFieldErrors({});
-        dispatch(loginUser({ username, password }));
+        setEmailError("");
+
+        try {
+            await dispatch(generateLoginOtp({ email })).unwrap();
+            toast.success(`OTP sent to ${email}`);
+            router.push(`/auth/login/verify-otp?email=${encodeURIComponent(email)}`);
+        } catch (err) {
+            toast.error(err || "Something went wrong. Please try again.");
+        }
     };
 
-
-    useEffect(() => {
-        if (isAuthenticated === true) {
-            addToast({
-                title: "Success",
-                description: "Welcome back to your dashboard",
-                variant: "flat",
-                classNames: {
-                    base: [
-                        "bg-white/90 backdrop-blur-md",
-                        "border-none",
-                        "rounded-2xl",
-                        "shadow-[0_8px_30px_rgb(0,0,0,0.12)]",
-                        "px-4 py-3",
-                        "min-w-[300px]"
-                    ],
-                    title: "text-[#115F94] font-bold text-sm",
-                    description: "text-gray-500 text-xs font-medium",
-                    icon: "text-green-500",
-                },
-            });
-
-
-            router.push('/dashboard')
-        }
-    }, [isAuthenticated, router])
-
-    useEffect(() => {
-        console.log("the error changed in effect ", error);
-        if (error) {
-
-            addToast({
-                title: "Login  Failed",
-                description: `Could not able to login ${error}`,
-                color: "danger",
-                variant: "flat",
-            });
-        }
-    }, [error]);
-
-
-
     return (
-        <div className="h-full w-full bg-gradient-to-b from-[#1DA1FA] to-[#115F94] rounded-t-[40px] p-8 flex flex-col shadow-2xl">
+        <div className="h-full w-full bg-gradient-blue rounded-t-[40px] p-8 flex flex-col shadow-2xl">
             <div className="flex flex-col gap-6 mt-4">
+                <h1 className="text-white text-2xl font-bold mb-2">Login with OTP</h1>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-white text-sm">Username</label>
+                <div className="flex flex-col gap-1">
+                    <label className="text-white text-sm">Email Address</label>
                     <Input
-                        placeholder="Enter Username"
+                        placeholder="Enter your registered email"
                         variant="flat"
-                        value={username || ""}
-                        isInvalid={!!fieldErrors.username}
-                        errorMessage={fieldErrors.username}
-                        onChange={(e) =>
-                            dispatch(setLoginField({ field: "username", value: e.target.value }))
-                        }
+                        value={email ?? ""}
+                        isInvalid={hasError}
+                        onChange={(e) => {
+                            dispatch(setLoginField({ field: "email", value: e.target.value }));
+                            if (emailError) setEmailError("");
+                        }}
                         classNames={{
                             inputWrapper: [
-                                "bg-white",
-                                "h-12",
-                                "rounded-xl",
-                                "px-3",
-                                "py-3",
-                                "border",
-                                fieldErrors.username ? "border-red-500" : "border-transparent",
-                                "shadow-none",
-                                "focus-within:ring-0",
+                                "input-wrapper-base",
+                                hasError ? "input-wrapper-error" : "input-wrapper-normal",
                             ],
-                            input: "text-sm text-black w-full focus:outline-none",
-                            errorMessage: "text-red-600 text-[10px] font-medium mt-1 text-left",
+                            input: "input-base",
                         }}
                     />
+                    {hasError && (
+                        <p className="text-red-200 text-xs font-medium mt-1 px-1">
+                            {emailError}
+                        </p>
+                    )}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-white text-sm">Password</label>
-                    <Input
-                        placeholder="Enter Password"
-                        variant="flat"
-                        value={password}
-                        type={showpassord ? "text" : "password"}
-                        onChange={(e) =>
-                            dispatch(setLoginField({ field: "password", value: e.target.value }))
-                        }
-                        isInvalid={!!fieldErrors.password}
-                        errorMessage={fieldErrors.password}
-                        classNames={{
-                            base: "relative w-full h-12",
-                            inputWrapper: [
-                                "bg-white",
-                                "h-12",
-                                "rounded-xl",
-                                "px-3",
-                                "py-3",
-                                "border",
-                                fieldErrors.password ? "border-red-500" : "border-transparent",
-                                "shadow-none",
-                                "focus-within:ring-0",
-                            ],
-                            input: [
-                                "text-sm",
-                                "text-black",
-                                "w-full",
-                                "pr-10",
-                                "focus:outline-none",
-                            ],
-                            errorMessage: "text-red-600 text-[10px] font-medium mt-1 text-left",
-
-                        }}
-                        endContent={
-                            <button
-                                type="button"
-                                onClick={() => setShowpassword(!showpassord)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                            >
-                                {showpassord ? <FaEye /> : <FaEyeSlash />}
-                            </button>
-                        }
-                    />
-                </div>
-
-                <div className="flex w-full justify-center items-center">
+                <div className="flex w-full justify-center mt-4">
                     <Button
-                        isLoading={loading}
                         isDisabled={loading}
-                        onClick={handleLogin}
-                        className="bg-white text-[#2196F3] font-bold h-12 rounded-xl mt-4 w-3/4"
+                        onPress={handleContinue}
+                        className="bg-white primary-color-blue  font-bold h-14 rounded-xl w-full text-lg shadow-lg active:scale-95 transition-transform"
                     >
-                        Sign In
+                        {loading ? <BouncingDots /> : "Continue"}
                     </Button>
                 </div>
 
@@ -202,7 +119,7 @@ export default function LoginForm() {
 
                     <p className="text-white text-sm">
                         Don&apos;t have an account?{" "}
-                        <span className="text-red-300 font-semibold">
+                        <span className="text-red-300 font-semibold cursor-pointer">
                             <Link href="/auth/signup">Sign Up</Link>
                         </span>
                     </p>

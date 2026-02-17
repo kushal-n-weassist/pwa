@@ -4,6 +4,9 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Shield, FileText, Settings, Phone, LogOut, ChevronRight } from "lucide-react";
 import { Button, Avatar } from "@heroui/react";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import {logout} from "@/features/auth/login/store/loginSlice";
 
 const menuItems = [
   {
@@ -37,7 +40,21 @@ const menuItems = [
 ];
 
 export default function ProfilePage() {
+  const state = useSelector((state)=>state.login);
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push('/auth/login');
+  };
+
+React.useEffect(() => {
+  if (!state.isAuthenticated) {
+    router.replace('/auth/login'); 
+  }
+}, [state.isAuthenticated, router]);
+  const {username,email}=state;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
@@ -56,8 +73,8 @@ export default function ProfilePage() {
             className="w-28 h-28 text-large border-4 border-white/20"
           />
           <div className="text-center">
-            <h2 className="text-xl font-bold text-white">Narayanan</h2>
-            <p className="text-sm text-white/80">narayanan@weassist.co.in</p>
+            <h2 className="text-xl font-bold text-white">{username}</h2>
+            <p className="text-sm text-white/80">{email}</p>
           </div>
           <Button
             className="bg-white text-[#1DA1FA] font-semibold rounded-full px-8 mt-2 shadow-md active:scale-95 transition-transform"
@@ -92,6 +109,7 @@ export default function ProfilePage() {
         <div className="mt-auto mb-4 flex justify-center">
           <Button
             className="bg-red-50 text-red-600 font-bold px-8 py-6 rounded-xl shadow-sm active:scale-95 transition-transform flex items-center gap-2"
+            onClick={handleLogout}
           >
             <LogOut size={20} />
             Log Out

@@ -1,14 +1,15 @@
 "use client";
 
-import { HeroUIProvider, ToastProvider } from "@heroui/react";
-import  StoreProvider  from "../src/store/StoreProvider";
+import { HeroUIProvider } from "@heroui/react";
+import { Toaster } from "react-hot-toast";
+import StoreProvider from "../src/store/StoreProvider";
 
 export default function Providers({ children }) {
   return (
     <StoreProvider>
       <HeroUIProvider>
-        <ToastProvider placement="top-center"/>
-          {children}
+        {children}
+        <Toaster position="top-center" />
       </HeroUIProvider>
     </StoreProvider>
   );

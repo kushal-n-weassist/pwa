@@ -1,8 +1,16 @@
+"use client";
 import { Avatar, Badge, Input } from "@heroui/react";
 import { Search, Bell } from "lucide-react";
 import Link from "next/link";
+import { useSelector } from "react-redux";
 
 export default function TopHeader() {
+
+
+    const state = useSelector((state)=>state.login);
+
+    const {username } = state;
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -10,7 +18,7 @@ export default function TopHeader() {
                 <Link href='/profile' alit="profile" className="flex items-center gap-3 active:opacity-80 transition-opacity">
                      <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026704d" size="md" />
                     <div className="text-white">
-                        <h1 className="text-xl font-bold">Hi, Bala</h1>
+                        <h1 className="text-xl font-bold">Hi, {username}</h1>
                         <p className="text-sm opacity-80">Welcome Back</p>
                     </div>
                 </Link>
