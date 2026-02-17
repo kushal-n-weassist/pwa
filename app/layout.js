@@ -9,9 +9,14 @@ const roboto = Roboto({
 });
 
 export const metadata = {
-  title: "Fusion app",
-  description: "",
-};
+  applicationName: 'Fusion',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Fusion',
+  },
+}
+
 
 export default function RootLayout({ children }) {
   return (

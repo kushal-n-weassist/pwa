@@ -15,12 +15,11 @@ export default function ProblemTreatmentStep() {
                 }}
             />
 
-
-
             <Textarea
                 label="Line of Treatment"
                 placeholder=""
                 labelPlacement="outside"
+
                 variant="flat"
                 minRows={6}
                 classNames={{
@@ -32,4 +31,4 @@ export default function ProblemTreatmentStep() {
             />
         </div>
     );
-}
+} 

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
@@ -95,7 +94,6 @@ export default function VerifyDetailsPage() {
                 )}
             </div>
 
-            {/* OTP Modal */}
             {activeModal === "otp" && (
                 <div className="fixed inset-0 z-[9999] flex items-end justify-center">
                     <div
@@ -116,7 +114,6 @@ export default function VerifyDetailsPage() {
                 </div>
             )}
 
-            {/* Raise Issue Modal */}
             {activeModal === "issue" && (
                 <div className="fixed inset-0 z-[9999] flex items-end justify-center">
                     <div

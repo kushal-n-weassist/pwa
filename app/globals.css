@@ -1,17 +1,50 @@
 @import "tailwindcss";
 
-html, body {
-  background-color: white; 
+html,
+body {
+  background-color: white;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
 }
 
 .motion-wrapper {
-  background-color: white; 
+  background-color: white;
   width: 100%;
   min-height: 100vh;
   position: relative;
   will-change: transform, opacity;
 }
 
+
+
+
+@layer utilities {
+  .bg-gradient-blue {
+    @apply bg-gradient-to-b from-[#1DA1FA] to-[#115F94];
+  }
+
+  .primary-color-blue {
+    color: #2196F3;
+  }
+
+}
+
+
+@layer components {
+  .input-wrapper-base {
+    @apply bg-white h-12 rounded-xl px-3 py-3 shadow-none border-2 transition-colors duration-200 focus-within:ring-0;
+  }
+
+  .input-wrapper-error {
+    @apply !border-red-400;
+  }
+
+  .input-wrapper-normal {
+    @apply border-transparent focus-within:!border-blue-300;
+  }
+
+  .input-base {
+    @apply text-sm text-black w-full focus:outline-none;
+  }
+}

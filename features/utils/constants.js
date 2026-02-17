@@ -1,0 +1,1 @@
+export const DEVICE_ID = "47338d84b6026ed93a75e1571bd5e619";
