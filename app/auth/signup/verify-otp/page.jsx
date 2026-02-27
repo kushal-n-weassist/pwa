@@ -16,9 +16,10 @@ export default function VerifyOtpPage() {
 
   const handleVerify = async () => {
 
-    if (otp.length !== 4) return;
+    if (otp.length !== 6) return;
 
     const result = await dispatch(verifyEmailOtp({ email, otp }));
+    console.log("the otp result",result);
     
     if (verifyEmailOtp.fulfilled.match(result)) {
       router.push("/dashboard");
@@ -39,7 +40,7 @@ export default function VerifyOtpPage() {
 
         <div className="flex justify-center w-full py-4">
           <InputOtp
-            length={4}
+            length={6}
             value={otp}
             onValueChange={(value) => dispatch(setField({ field: "otp", value }))}
             variant="flat"

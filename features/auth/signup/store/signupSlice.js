@@ -10,11 +10,13 @@ export const createUser = createAsyncThunk(
         body: JSON.stringify({ first_name, email, mobile_no }),
       });
       if (!res.ok) throw await res.json();
-      return await res.json();
+      const response = await res.json();
+      console.log("SIGN-UP response -----------------> ", response);
+      return response;
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const sendEmailOtp = createAsyncThunk(
@@ -31,7 +33,7 @@ export const sendEmailOtp = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 export const verifyEmailOtp = createAsyncThunk(
@@ -48,7 +50,7 @@ export const verifyEmailOtp = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err);
     }
-  }
+  },
 );
 
 const signupSlice = createSlice({
@@ -67,20 +69,48 @@ const signupSlice = createSlice({
       state[field] = value;
     },
     resetSignup: (state) => {
-        state.otp = "";
-        state.loading = false;
-        state.error = null;
-    }
+      state.otp = "";
+      state.loading = false;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(createUser.pending, (state) => { state.loading = true; })
-      .addCase(createUser.fulfilled, (state) => { state.loading = false; })
+      .addCase(createUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createUser.fulfilled, (state) => {
+        state.loading = false;
+      })
       .addCase(createUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(verifyEmailOtp.pending, (state) => { state.loading = true; });
+      .addCase(verifyEmailOtp.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(verifyEmailOtp.fulfilled, (state, action) => {
+        const { token, email, full_name } = action.payload.message;
+
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.userToken = token;
+        state.email = email;
+        state.username = full_name;
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("userToken", token);
+          localStorage.setItem("username", full_name);
+          localStorage.setItem("email", email);
+
+          document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+        }
+      })
+      .addCase(verifyEmailOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
