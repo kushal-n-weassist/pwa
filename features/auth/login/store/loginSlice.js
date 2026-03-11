@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import {DEVICE_ID} from '@/features/utils/constants';
+import { DEVICE_ID } from '@/features/utils/constants';
 
 const getStoredAuth = () => {
   if (typeof window !== "undefined") {
@@ -40,14 +40,14 @@ export const verifyLoginOtp = createAsyncThunk(
       const res = await fetch("/api/method/weassist.api.auth.verify_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, otp: otp ,device_id: DEVICE_ID,}),
+        body: JSON.stringify({ user_id: email, otp: otp, device_id: DEVICE_ID, }),
       });
       const data = await res.json();
 
       if (data.message?.success === false) {
-        return rejectWithValue(data.message.message); 
+        return rejectWithValue(data.message.message);
       }
-      
+
       return data;
     } catch (err) {
       return rejectWithValue("Verification failed");
@@ -74,6 +74,10 @@ const loginSlice = createSlice({
     logout: (state) => {
       state.isAuthenticated = false;
       state.userToken = null;
+      state.email = "";        
+      state.username = "";   
+      state.otp = "";          
+      state.error = null;
       if (typeof window !== "undefined") {
         localStorage.clear();
         document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
@@ -82,8 +86,8 @@ const loginSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(generateLoginOtp.pending, (state) => { 
-        state.loading = true; 
+      .addCase(generateLoginOtp.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(generateLoginOtp.fulfilled, (state) => { state.loading = false; })
@@ -97,7 +101,7 @@ const loginSlice = createSlice({
       })
       .addCase(verifyLoginOtp.fulfilled, (state, action) => {
         const { token, email, full_name } = action.payload.message;
-        
+
         state.loading = false;
         state.isAuthenticated = true;
         state.userToken = token;
@@ -115,7 +119,7 @@ const loginSlice = createSlice({
       })
       .addCase(verifyLoginOtp.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload; 
+        state.error = action.payload;
       });
   },
 });

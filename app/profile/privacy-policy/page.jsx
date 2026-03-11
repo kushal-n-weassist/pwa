@@ -4,14 +4,36 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Card, CardBody, ScrollShadow } from "@heroui/react";
+import { useSelector } from "react-redux";
+import { selectLegalContent, selectLegalLoading } from "@/features/profile/store/legalSlice";
 
 export default function PrivacyPolicy() {
   const router = useRouter();
+  const content = useSelector(selectLegalContent("privacy_policy"));
+  const loading = useSelector(selectLegalLoading);
 
-  const policyText = `
-   We Assists (referred to as "we", "us", "Weassist") are the authors and publishers  of the website https://www.weassist.co.in     and its subdomains, if any (collectively referred to as "Websites") on the world wide web as well as providers of other software applications, including but not limited to    the Applications used for Hospital Information System, Customer Relationship Management, Appointments Management, Call Center / Contact Center, Mobile Applications (referred to as "App").
-All such Apps, together with Websites, visited, accessed, or used by users are referred to as "Services". Weassist provides the Services, either on its own or in partnership with its agents, affiliates, associates, representatives, or third parties (together referred to as "Partners").
-  `;
+const cleanQuillHtml = (html) => {
+  const cleaned = html
+    .replace(/&nbsp;/g, " ")
+    .replace(/<p><span[^>]*>\s*<\/span><\/p>/g, "")
+    .replace(/<p><br><\/p>/g, "")
+    .replace(/\s{2,}/g, " ");
+
+  const withHeadings = cleaned.replace(
+    /(<p[^>]*>)(<span[^>]*>)\s*(\d+\.\s+[A-Z][A-Z\s\/]+)(<\/span><\/p>)/g,
+    '<p class="legal-heading">$3</p>'
+  );
+
+  const withAddress = withHeadings.replace(
+    /(<p[^>]*>)(<span[^>]*>)([^<]*(?:Bengaluru|Karnataka|India|560062)[^<]*)(<\/span><\/p>)/g,
+    '<p class="legal-address">$3</p>'
+  );
+
+  return withAddress;
+};
+
+// Then use it:
+const htmlContent = cleanQuillHtml(content?.message?.privacy_policy || "");  
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
@@ -20,29 +42,27 @@ All such Apps, together with Websites, visited, accessed, or used by users are r
           <ChevronLeft size={24} className="text-gray-800" />
         </button>
         <h1 className="text-xl font-bold text-gray-900">Privacy Policy</h1>
-        <div className="w-6" /> 
+        <div className="w-6" />
       </div>
 
       <div className="p-6 flex-grow flex flex-col">
         <Card className="bg-[#EAEAEA] border-none rounded-[20px] h-[75vh] shadow-none">
           <CardBody className="p-6">
-            <ScrollShadow
-              hideScrollBar={false}
-              className="h-full w-full pr-2 text-gray-600 leading-relaxed text-[15px]"
-            >
-              <div className="whitespace-pre-line">
-                {policyText}
-                {"\n\n"}
-                Your privacy is important to us. This policy outlines how we collect,
-                use, and protect your personal information when using our Services.
-                By accessing our Apps, you agree to the terms outlined in this
-                Privacy Policy.
-                {"\n\n"}
-                We may update this policy from time to time. We encourage users to
-                frequently check this page for any changes to stay informed about
-                how we are helping to protect the personal information we collect.
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-400 text-sm">Loading...</p>
               </div>
-            </ScrollShadow>
+            ) : (
+              <ScrollShadow
+                hideScrollBar={false}
+                className="h-full w-full pr-2"
+              >
+                <div
+                  className="text-gray-600 text-[13px] leading-relaxed legal-content"
+                  dangerouslySetInnerHTML={{ __html: htmlContent }}
+                />
+              </ScrollShadow>
+            )}
           </CardBody>
         </Card>
       </div>

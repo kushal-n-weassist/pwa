@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Roboto } from "next/font/google";
 import Providers from "./Provider";
+import InstallPrompt from "@/components/InstallPrompt";
 
 const roboto = Roboto({
   weight: ['300', '400', '700'],
@@ -17,20 +18,17 @@ export const metadata = {
   },
 }
 
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${roboto.variable} font-roboto font-light antialiased`}
-      >
+      <body className={`${roboto.variable} font-roboto font-light antialiased`}>
         <Providers>
           <main className="light text-foreground bg-background">
             {children}
           </main>
+          <InstallPrompt />  
         </Providers>
-
       </body>
-    </html >
+    </html>
   );
 }

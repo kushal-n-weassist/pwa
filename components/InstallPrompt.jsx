@@ -29,9 +29,6 @@ export default function InstallPrompt() {
 
   const close = () => setShow(false)
 
-
-
-
   const overlayStyle = {
   position: 'fixed',
   top: 0,

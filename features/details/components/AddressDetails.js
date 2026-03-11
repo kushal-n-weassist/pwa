@@ -6,27 +6,21 @@ import { useEffect } from "react";
 export default function AddressDetails() {
   const dispatch = useDispatch();
   const addressData = useSelector((state) => state.details.address);
+  
+  const docStatus = useSelector((state) => state.details.docStatus);
+  const isReadOnly = docStatus === 1;
 
 
   const handleChange = (field, value) => {
     dispatch(updateField({ section: "address", field, value }));
   };
 
+
   const inputStyles = {
     label: "hidden",
-    inputWrapper: [
-      "h-[42px]",
-      "min-h-[42px]",
-      "rounded-[10px]",
-      "border-gray-200",
-      "bg-white",
-      "shadow-none",
-      "transition-none",
-      "group-data-[focus=true]:border-gray-300",
-      "after:hidden",
-      "before:hidden"
-    ],
-    input: "placeholder:text-gray-300 text-gray-700 text-[14px] outline-none",
+    inputWrapper: "heroui-input-custom",
+    input: "heroui-input-field",
+    innerWrapper: "h-full flex items-center py-0"
   };
 
   const CustomLabel = ({ children }) => (
@@ -51,6 +45,7 @@ export default function AddressDetails() {
           <div className="flex-1">
             <CustomLabel>Pin Code</CustomLabel>
             <Input
+              isDisabled={isReadOnly}
               placeholder="XXXX"
               variant="bordered"
               classNames={inputStyles}
@@ -61,6 +56,7 @@ export default function AddressDetails() {
           <div className="flex-1">
             <CustomLabel>City</CustomLabel>
             <Input
+              isDisabled={isReadOnly}
               placeholder="XXXX"
               variant="bordered"
               classNames={inputStyles}
@@ -73,6 +69,7 @@ export default function AddressDetails() {
         <div>
           <CustomLabel>State</CustomLabel>
           <Input
+            isDisabled={isReadOnly}
             placeholder="XXXX"
             variant="bordered"
             classNames={inputStyles}
@@ -84,6 +81,7 @@ export default function AddressDetails() {
         <div>
           <CustomLabel>Address line 1</CustomLabel>
           <Input
+            isDisabled={isReadOnly}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}
@@ -95,6 +93,7 @@ export default function AddressDetails() {
         <div>
           <CustomLabel>Address line 2</CustomLabel>
           <Input
+            isDisabled={isReadOnly}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}

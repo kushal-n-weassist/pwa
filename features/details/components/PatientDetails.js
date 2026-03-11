@@ -1,14 +1,15 @@
+"use client";
+
 import { Input, Select, SelectItem } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateField } from "../store/detailsSlice"; 
+import { updateField } from "../store/detailsSlice";
 
 export default function PatientDetails() {
   const dispatch = useDispatch();
-  
+
   const patientData = useSelector((state) => state.details.patient);
-
-
-
+  const docStatus = useSelector((state) => state.details.docStatus);
+  const isReadOnly = docStatus === 1;
 
   const handleChange = (field, value) => {
     dispatch(updateField({ section: "patient", field, value }));
@@ -16,25 +17,18 @@ export default function PatientDetails() {
 
   const selectStyles = {
     label: "hidden",
-    trigger: [
-      "h-[42px]", "min-h-[42px]", "rounded-[10px]", "border-gray-200", "bg-white",
-      "shadow-none", "transition-none", "flex items-center justify-between",
-      "group-data-[focus=true]:border-gray-300", "after:hidden", "before:hidden"
-    ],
-    popoverContent: ["bg-white", "border border-gray-100", "shadow-lg", "rounded-[12px]", "p-1"],
-    value: "text-[14px] text-gray-700 font-medium pt-0",
+    trigger: "heroui-select-custom",
+    value: "heroui-select-value",
+    popoverContent: "bg-white border border-gray-100 shadow-lg rounded-[12px] p-1",
     innerWrapper: "flex items-center justify-between h-full",
     selectorIcon: "text-gray-400 w-4 h-4 static",
   };
 
   const inputStyles = {
     label: "hidden",
-    inputWrapper: [
-      "h-[42px]", "min-h-[42px]", "rounded-[10px]", "border-gray-100", "bg-white",
-      "shadow-none", "transition-none", "group-data-[focus=true]:border-gray-100",
-      "after:hidden", "before:hidden"
-    ],
-    input: "placeholder:text-gray-300 text-gray-700 text-[14px] outline-none",
+    inputWrapper: "heroui-input-custom",
+    input: "heroui-input-field",
+    innerWrapper: "h-full flex items-center py-0"
   };
 
   const CustomLabel = ({ children }) => (
@@ -52,8 +46,10 @@ export default function PatientDetails() {
         <div>
           <CustomLabel>Full Name</CustomLabel>
           <Input
+            isDisabled={isReadOnly}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
+            label=''
             classNames={inputStyles}
             value={patientData.fullName || ""}
             onChange={(e) => handleChange("fullName", e.target.value)}
@@ -64,10 +60,12 @@ export default function PatientDetails() {
           <div className="flex-1">
             <CustomLabel>Date of birth</CustomLabel>
             <Input
+              isDisabled={isReadOnly}
               type="date"
+              label=''
               variant="bordered"
               classNames={{ ...inputStyles, input: [inputStyles.input, "appearance-none"] }}
-              onClick={(e) => e.target.showPicker?.()}
+              onClick={(e) => !isReadOnly && e.target.showPicker?.()}
               value={patientData.dob || ""}
               onChange={(e) => handleChange("dob", e.target.value)}
             />
@@ -75,15 +73,18 @@ export default function PatientDetails() {
           <div className="flex-1">
             <CustomLabel>Gender</CustomLabel>
             <Select
+              isDisabled={isReadOnly}
               placeholder="XXXX"
+              label=''
               variant="bordered"
               disableAnimation
               classNames={selectStyles}
               selectedKeys={patientData.gender ? [patientData.gender] : []}
               onSelectionChange={(keys) => handleChange("gender", Array.from(keys)[0])}
             >
-              <SelectItem key="male" textValue="Male">Male</SelectItem>
-              <SelectItem key="female" textValue="Female">Female</SelectItem>
+              <SelectItem key="Male" textValue="Male">Male</SelectItem>
+              <SelectItem key="Female" textValue="Female">Female</SelectItem>
+              <SelectItem key="Others" textValue="Others">Others</SelectItem>
             </Select>
           </div>
         </div>
@@ -92,7 +93,9 @@ export default function PatientDetails() {
           <div className="flex-1">
             <CustomLabel>Pin Code</CustomLabel>
             <Input
+              isDisabled={isReadOnly}
               placeholder="XXXX"
+              label=''
               variant="bordered"
               classNames={inputStyles}
               value={patientData.pincode || ""}
@@ -102,8 +105,10 @@ export default function PatientDetails() {
           <div className="flex-1">
             <CustomLabel>Area</CustomLabel>
             <Select
+              isDisabled={isReadOnly}
               placeholder="XXXX"
               variant="bordered"
+              label=''
               classNames={selectStyles}
               selectedKeys={patientData.area ? [patientData.area] : []}
               onSelectionChange={(keys) => handleChange("area", Array.from(keys)[0])}
@@ -117,8 +122,10 @@ export default function PatientDetails() {
           <div className="flex-1">
             <CustomLabel>City</CustomLabel>
             <Input
+              isDisabled={isReadOnly}
               placeholder="XXXX"
               variant="bordered"
+              label=''
               classNames={inputStyles}
               value={patientData.city || ""}
               onChange={(e) => handleChange("city", e.target.value)}
@@ -127,8 +134,10 @@ export default function PatientDetails() {
           <div className="flex-1">
             <CustomLabel>State</CustomLabel>
             <Input
+              isDisabled={isReadOnly}
               placeholder="XXXX"
               variant="bordered"
+              label=''
               classNames={inputStyles}
               value={patientData.state || ""}
               onChange={(e) => handleChange("state", e.target.value)}
@@ -139,8 +148,10 @@ export default function PatientDetails() {
         <div>
           <CustomLabel>Address line 1</CustomLabel>
           <Input
+            isDisabled={isReadOnly}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
+            label=''
             classNames={inputStyles}
             value={patientData.address1 || ""}
             onChange={(e) => handleChange("address1", e.target.value)}
@@ -150,8 +161,10 @@ export default function PatientDetails() {
         <div>
           <CustomLabel>Address line 2</CustomLabel>
           <Input
+            isDisabled={isReadOnly}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
+            label=''
             classNames={inputStyles}
             value={patientData.address2 || ""}
             onChange={(e) => handleChange("address2", e.target.value)}
