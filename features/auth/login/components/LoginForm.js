@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Input, Button, Divider } from "@heroui/react";
 import { FaGoogle, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -77,8 +77,9 @@ export default function LoginForm() {
                             inputWrapper: [
                                 "input-wrapper-base",
                                 hasError ? "input-wrapper-error" : "input-wrapper-normal",
+                                "h-full","flex","items-center", "py-3",
                             ],
-                            input: "input-base",
+                            input: "input-base text-lg",
                         }}
                     />
                     {hasError && (

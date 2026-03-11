@@ -1,56 +1,112 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Mail, Phone } from "lucide-react";
-import { Button, Input, Textarea } from "@heroui/react";
+import { Button, Input, Textarea, Spinner } from "@heroui/react";
+import { useDispatch, useSelector } from "react-redux";
+import { 
+  fetchLegalContent, 
+  selectLegalContent, 
+  selectLegalLoading 
+} from "@/features/profile/store/legalSlice";
+
+const parseContactContent = (raw) => {
+  if (!raw) return { emails: [], phones: [] };
+  const lines = raw.split("\n").map((l) => l.trim()).filter(Boolean);
+  const emails = [];
+  const phones = [];
+
+  lines.forEach((line) => {
+    const emailMatch = line.match(/E-?mail\s*=\s*(.+)/i);
+    const phoneMatch = line.match(/phone\s*(?:Number)?\s*=\s*(.+)/i);
+    if (emailMatch) emails.push(emailMatch[1].trim());
+    if (phoneMatch) phones.push(phoneMatch[1].trim());
+  });
+  return { emails, phones };
+};
 
 export default function ContactUs() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  
+  const content = useSelector(selectLegalContent("contact_us"));
+  const loading = useSelector(selectLegalLoading);
+
+  useEffect(() => {
+    if (!content) {
+      dispatch(fetchLegalContent("contact_us"));
+    }
+  }, [dispatch, content]);
+
+  const raw = content?.message?.contact_us || "";
+  const { emails, phones } = parseContactContent(raw);
+
+  const formatTel = (num) => num.replace(/\s+/g, "");
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
-      <div className="bg-white px-6 pt-12 pb-4 flex items-center justify-between shadow-sm">
-        <button onClick={() => router.back()} className="p-1">
+    <div className="min-h-screen bg-white flex flex-col relative font-sans">
+      <div className="px-4 pt-12 pb-4 flex items-center justify-between sticky top-0 z-30 bg-white">
+        <button onClick={() => router.back()} className="p-1 active:opacity-50">
           <ChevronLeft size={24} className="text-gray-800" />
         </button>
         <h1 className="text-xl font-bold text-gray-900">Contact Us</h1>
-        <div className="w-6" /> 
+        <div className="w-6" />
       </div>
 
-      <div className="p-6 flex flex-col gap-6 overflow-y-auto pb-32">
-        <div className="space-y-2">
-          <label className="text-sm font-bold text-gray-700">Email</label>
-          <div className="flex items-center gap-4 bg-[#F1F3F4] p-4 rounded-xl">
-            <Mail size={20} className="text-gray-400" />
-            <span className="text-sm text-gray-600 font-medium">
-              contact@weassist.co.in
-            </span>
+      <div className="p-6 flex flex-col gap-5 overflow-y-auto pb-32">
+        {loading ? (
+          <div className="flex items-center justify-center h-40">
+            <Spinner color="primary" size="sm" />
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-bold text-gray-700">Phone</label>
-          <div className="flex flex-col gap-3">
-            {[
-              "+91 799611 0003",
-              "+91 799611 0006",
-              "+91 968628 8715"
-            ].map((num, idx) => (
-              <div key={idx} className="flex items-center gap-4 bg-[#F1F3F4] p-4 rounded-xl">
-                <Phone size={20} className="text-gray-400" />
-                <span className="text-sm text-gray-600 font-medium">{num}</span>
+        ) : (
+          <>
+            {emails.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-sm font-bold text-gray-900">Email</label>
+                {emails.map((email, idx) => (
+                  <a
+                    key={`email-${idx}`}
+                    href={`mailto:${email}`}
+                    className="flex items-center gap-4 bg-[#F1F1F1] p-4 rounded-xl active:opacity-70 transition-opacity"
+                  >
+                    <Mail size={20} className="text-gray-400" />
+                    <span className="text-sm text-gray-500 font-medium">{email}</span>
+                  </a>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            )}
 
-        <div className="flex gap-4 mt-2">
+            {phones.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-sm font-bold text-gray-900">Phone</label>
+                <div className="flex flex-col gap-3">
+                  {phones.map((num, idx) => (
+                    <a
+                      key={`phone-${idx}`}
+                      href={`tel:${formatTel(num)}`}
+                      className="flex items-center gap-4 bg-[#F1F1F1] p-4 rounded-xl active:opacity-70 transition-opacity"
+                    >
+                      <Phone size={20} className="text-gray-400" />
+                      <span className="text-sm text-gray-500 font-medium">{num}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        <div className="flex gap-6 mt-2">
           <Input
             label="Name"
             variant="underlined"
             placeholder=" "
             labelPlacement="outside"
+            classNames={{
+              label: "font-bold text-gray-900 text-sm",
+              input: "text-sm",
+            }}
             className="flex-1"
           />
           <Input
@@ -58,28 +114,32 @@ export default function ContactUs() {
             variant="underlined"
             placeholder=" "
             labelPlacement="outside"
+            classNames={{
+              label: "font-bold text-gray-900 text-sm",
+              input: "text-sm",
+            }}
             className="flex-1"
           />
         </div>
 
-        <div className="space-y-2 mt-2">
-          <label className="text-sm font-bold text-gray-700">Message</label>
+        <div className="space-y-3 mt-2">
+          <label className="text-sm font-bold text-gray-900">Message</label>
           <Textarea
             variant="flat"
-            placeholder="Type your message here..."
             disableAnimation
             disableAutosize
             classNames={{
-              inputWrapper: "bg-[#F1F3F4] rounded-2xl p-4 min-h-[150px]",
-              input: "text-sm"
+              inputWrapper: "bg-[#F1F1F1] rounded-2xl p-4 min-h-[160px] shadow-none",
+              input: "text-sm",
             }}
           />
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md">
+      {/* Submit Button */}
+      <div className="mt-auto p-6 bg-white">
         <Button 
-          className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-xl text-lg shadow-lg active:scale-95 transition-transform"
+          className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-2xl text-lg active:scale-[0.98] transition-transform"
         >
           Submit Query
         </Button>

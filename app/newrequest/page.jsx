@@ -1,19 +1,19 @@
 "use client";
-import { Button, user } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import VerticalStep from "@/components/VerticalStep";
 import { useState } from "react";
-
+import BouncingDots from "@/components/BouncingDots";
 const steps = [
     {
         number: "Step One",
-        title: "Upload documents to autofill the form.",
+        title: "Upload Aadhar and PAN of the Insured & Patient to autofill details.",
         isLast: false,
     },
     {
         number: "Step Two",
-        title: "Complete any missing fields.",
+        title: "Complete any missing fields in the application.",
         isLast: false,
     },
     {
@@ -23,7 +23,7 @@ const steps = [
     },
     {
         number: "Step Four",
-        title: "Verify the info once submitted.",
+        title: "Verify the info once submitted by the facility.",
         isLast: false,
     },
     {
@@ -41,20 +41,22 @@ export default function GetStarted() {
         router.back();
     };
     
-    const handleContinue=()=>{
+    const handleContinue = () => {
         setIsNavigating(true);
         router.push('/upload');
-    }
-
+    };
 
     return (
         <div className="min-h-screen bg-white flex flex-col px-6 py-12 relative">
             <div className="flex items-center justify-between mb-10">
-                <button className="p-2 -ml-2">
-                    <ChevronLeft size={24} className="text-gray-800"  onClick={handleBack}/>
+                <button 
+                    className="p-2 -ml-2 hover:bg-gray-50 rounded-full transition-colors"
+                    onClick={handleBack}
+                >
+                    <ChevronLeft size={24} className="text-gray-800" />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 mr-8">Get Started</h1>
-                <div className="w-6" />
+                <h1 className="text-xl font-bold text-gray-900">Get Started</h1>
+                <div className="w-6" /> 
             </div>
 
             <div className="flex-grow space-y-0 ml-2">
@@ -68,10 +70,11 @@ export default function GetStarted() {
                 ))}
             </div>
 
-            <div className="mt-auto pb-6">
+            <div className="mt-10 pb-6">
                 <Button
                     isLoading={isNavigating}
                     onPress={handleContinue}
+                    spinner={<BouncingDots/>}
                     className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-xl text-lg shadow-lg active:scale-95 transition-transform"
                 >
                     Continue

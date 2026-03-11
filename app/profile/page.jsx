@@ -4,9 +4,13 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Shield, FileText, Settings, Phone, LogOut, ChevronRight } from "lucide-react";
 import { Button, Avatar } from "@heroui/react";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import {logout} from "@/features/auth/login/store/loginSlice";
+import { logout } from "@/features/auth/login/store/loginSlice";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchLegalContent, selectLegalContent, selectLegalLoading } from "@/features/profile/store/legalSlice";
+
+
+
 
 const menuItems = [
   {
@@ -14,7 +18,7 @@ const menuItems = [
     label: "Privacy Policy",
     icon: <Shield size={20} className="text-[#1DA1FA]" />,
     bgColor: "bg-blue-50",
-    href: "/profile/privacy-policy", 
+    href: "/profile/privacy-policy",
   },
   {
     id: 2,
@@ -40,21 +44,36 @@ const menuItems = [
 ];
 
 export default function ProfilePage() {
-  const state = useSelector((state)=>state.login);
+
+  const state = useSelector((state) => state);
+  
+  const login = useSelector((state)=>state.login);
   const router = useRouter();
   const dispatch = useDispatch();
 
   const handleLogout = () => {
     dispatch(logout());
     router.push('/auth/login');
+
   };
 
-React.useEffect(() => {
-  if (!state.isAuthenticated) {
-    router.replace('/auth/login'); 
-  }
-}, [state.isAuthenticated, router]);
-  const {username,email}=state;
+  useEffect(() => {
+    console.log("calling")
+    dispatch(fetchLegalContent("privacy_policy"));
+    console.log("called privay")
+    dispatch(fetchLegalContent("terms_of_use"));
+    dispatch(fetchLegalContent("contact_us"));
+  }, []);
+
+
+
+
+  React.useEffect(() => {
+    if (!login.isAuthenticated) {
+      router.replace('/auth/login');
+    }
+  }, [login.isAuthenticated, router]);
+  const { username, email } = login;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
@@ -69,7 +88,7 @@ React.useEffect(() => {
 
         <div className="flex flex-col items-center gap-3 z-10">
           <Avatar
-            src="https://i.pravatar.cc/150?u=a042581f4e29026704d" 
+            src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
             className="w-28 h-28 text-large border-4 border-white/20"
           />
           <div className="text-center">
@@ -90,7 +109,7 @@ React.useEffect(() => {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => router.push(item.href)} 
+              onClick={() => router.push(item.href)}
               className="flex items-center justify-between p-2 w-full active:bg-gray-50 rounded-xl transition-colors"
             >
               <div className="flex items-center gap-4">

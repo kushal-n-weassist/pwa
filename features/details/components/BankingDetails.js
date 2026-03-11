@@ -1,30 +1,52 @@
 import { Input } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateField } from "../store/detailsSlice";
+import { updateField, validateBank } from "../store/detailsSlice";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 export default function BankingDetails() {
   const dispatch = useDispatch();
-  const bankingData = useSelector((state) => state.details.banking);
+
+  const {
+    banking: bankingData,
+    isValidatingBank,
+    bankError,
+    docStatus,
+    bankSuccess, 
+
+  } = useSelector((state) => state.details);
+
+  const isReadOnly = docStatus === 1;
 
   const handleChange = (field, value) => {
-    dispatch(updateField({ section: "banking", field, value }));
+    const formattedValue = field === "ifscCode" ? value.toUpperCase() : value;
+    dispatch(updateField({ section: "banking", field, value: formattedValue }));
+  };
+
+  useEffect(() => {
+  if (bankSuccess) toast.success(bankSuccess);
+}, [bankSuccess]);
+
+useEffect(() => {
+  if (bankError) toast.error(bankError);
+}, [bankError]);
+
+  const handleBlur = (field, currentValue) => {
+    // if (isReadOnly) return;
+
+    const ifsc = field === "ifscCode" ? currentValue : bankingData.ifscCode;
+    const bankName = field === "bankName" ? currentValue : bankingData.bankName;
+
+    if (ifsc?.length === 11 && bankName?.length > 2) {
+      dispatch(validateBank({ ifsc, bank_name: bankName }));
+    }
   };
 
   const inputStyles = {
-    label: "hidden", 
-    inputWrapper: [
-      "h-[42px]", 
-      "min-h-[42px]",
-      "rounded-[10px]", 
-      "border-gray-200", 
-      "bg-white",
-      "shadow-none",
-      "transition-none",
-      "group-data-[focus=true]:border-gray-300", 
-      "after:hidden",
-      "before:hidden"
-    ],
-    input: "placeholder:text-gray-300 text-gray-700 text-[14px] outline-none",
+    label: "hidden",
+    inputWrapper: "heroui-input-custom",
+    input: "heroui-input-field",
+    innerWrapper: "h-full flex items-center py-0"
   };
 
   const CustomLabel = ({ children }) => (
@@ -37,7 +59,7 @@ export default function BankingDetails() {
     <div className="flex flex-col gap-3">
       <div className="mb-1">
         <h2 className="text-[20px] font-extrabold text-gray-900">
-          Fill in Insured details
+          Fill in Banking details
         </h2>
         <p className="text-[13px] text-gray-500 font-medium mt-0.5">
           Fill in all the banking details.
@@ -48,28 +70,33 @@ export default function BankingDetails() {
         <div>
           <CustomLabel>IFSC Code</CustomLabel>
           <Input
+            isDisabled={isReadOnly} //
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}
             value={bankingData.ifscCode || ""}
             onChange={(e) => handleChange("ifscCode", e.target.value)}
+            onBlur={(e) => handleBlur("ifscCode", e.target.value)}
+
           />
         </div>
 
         <div>
           <CustomLabel>Bank Name</CustomLabel>
           <Input
+            isDisabled={isReadOnly} //
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}
             value={bankingData.bankName || ""}
             onChange={(e) => handleChange("bankName", e.target.value)}
-          />
+            onBlur={(e) => handleBlur("bankName", e.target.value)} />
         </div>
 
         <div>
           <CustomLabel>Branch Name</CustomLabel>
           <Input
+            isDisabled={isReadOnly} //
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}
@@ -81,6 +108,7 @@ export default function BankingDetails() {
         <div>
           <CustomLabel>Account Number</CustomLabel>
           <Input
+            isDisabled={isReadOnly} //
             type="number"
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
@@ -93,6 +121,7 @@ export default function BankingDetails() {
         <div>
           <CustomLabel>Account Holder Name</CustomLabel>
           <Input
+            isDisabled={isReadOnly} //
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}
