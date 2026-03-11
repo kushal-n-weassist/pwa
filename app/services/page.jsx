@@ -3,33 +3,35 @@ import React, { useState } from "react";
 import { Input, Button } from "@heroui/react";
 import { Search, ChevronLeft } from "lucide-react";
 import ServiceTile from "@/features/services/components/ServiceTile";
-import ssr from '@/public/ssr.png';
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+
 
 export default function ServicesPage() {
+    const router = useRouter();
     const [searchValue, setSearchValue] = useState("");
+    const { ssrList, loading } = useSelector((state) => state.dashboard);
+
+    const handleBack = () => {
+        router.back();
+    };
 
 
-    const servicesList = [
-        { id: "SSR-10-24-00", name: "Karthik G" },
-        { id: "SSR-10-24-01", name: "Karthik G" },
-        { id: "SSR-10-24-02", name: "Karthik G" },
-        { id: "SSR-10-24-03", name: "Karthik G" },
-        { id: "SSR-10-24-04", name: "Karthik G" },
-        { id: "SSR-10-24-05", name: "Karthik G" },
-        { id: "SSR-10-24-06", name: "Karthik G" },
-        { id: "SSR-10-24-07", name: "Karthik G" },
-    ];
 
-    const filteredList = servicesList.filter(
+    const filteredList = ssrList.filter(
         (item) =>
-            item.id.toLowerCase().includes(searchValue.toLowerCase()) ||
-            item.name.toLowerCase().includes(searchValue.toLowerCase())
+            item.patient_first_name?.toLowerCase().includes(searchValue.toLowerCase()) ||
+            item.hospital_name?.toLowerCase().includes(searchValue.toLowerCase()) ||
+            item.city_name?.toLowerCase().includes(searchValue.toLowerCase())
     );
+
+    console.log("the filted list", filteredList)
+
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative">
             <div className="px-6 pt-8 pb-4 flex items-center relative">
-                <button className="absolute left-6 p-1 -ml-1 text-gray-700">
+                <button className="absolute left-6 p-1 -ml-1 text-gray-700" onClick={handleBack}>
                     <ChevronLeft size={28} />
                 </button>
                 <h1 className="text-[20px] font-extrabold text-gray-900 w-full text-center">
@@ -50,7 +52,7 @@ export default function ServicesPage() {
                     placeholder="Search here"
                     value={searchValue}
                     onValueChange={setSearchValue}
-                    
+
                     type="search"
                 />
             </div>
@@ -58,11 +60,12 @@ export default function ServicesPage() {
 
             <div className="flex-1 px-6 pb-24 overflow-y-auto">
                 <div className="grid grid-cols-2 gap-4">
-                    {filteredList.map((service, index) => (
+                    {filteredList.map((service) => (
+
                         <ServiceTile
-                            key={index}
-                            id={service.id}
-                            name={service.name}
+                            key={service.name}
+                            id={service.name}
+                            name={service.patient_first_name}
                             onClick={() => console.log(`Clicked on ${service.id}`)}
                         />
                     ))}

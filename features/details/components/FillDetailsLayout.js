@@ -1,36 +1,56 @@
-// src/features/details/FillDetailsLayout.js
 "use client";
 import React from "react";
-import { Card, CardBody, Button } from "@heroui/react";
-import { ChevronLeft } from "lucide-react";
+import { Card, CardBody, Button, user } from "@heroui/react";
+import { ChevronLeft, UserRound } from "lucide-react";
 import HorizontalStepper from "./HorizontalStepper";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
 export default function FillDetailsLayout({ step, onBack, onNext, children }) {
+  const router = useRouter();
+  const docStatus = useSelector((state) => state.details.docStatus);
+
+  const handleBackNavigation = () => {
+    if (step === 1) {
+      router.back();
+    } else {
+      onBack();
+    }
+  };
   const isPreviewPage = step === 7;
+  const isReadOnly = docStatus === 1;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <div className="bg-white px-6 pt-12 pb-4 flex items-center gap-4 sticky top-0 z-50">
-        <button 
-          onClick={onBack} 
-          className="p-1 active:scale-90 transition-transform"
-          disabled={step === 1}
-        >
-          <ChevronLeft 
-            size={24} 
-            className={step === 1 ? "text-gray-300" : "text-gray-800"} 
-          />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900 flex-1 text-center mr-8">
+      <div className="bg-white px-4 pt-12 pb-4 grid grid-cols-3 items-center sticky top-0 z-50">
+        <div className="flex justify-start ml-4">
+          <Button
+            isIconOnly
+            variant="light"
+            onPress={handleBackNavigation}
+            className="min-w-0 w-10 h-10 -ml-2"
+          >
+            <ChevronLeft size={24} className="text-gray-800" />
+          </Button>
+        </div>
+
+        <h1 className="text-[18px] font-bold text-gray-900 text-center whitespace-nowrap">
           {isPreviewPage ? "Submit Request" : "Fill Details"}
         </h1>
+
+        <div />
       </div>
 
       <div className={`p-6 flex-grow ${isPreviewPage ? 'pb-6' : 'pb-32'}`}>
-        <Card className="shadow-sm border-none rounded-[32px] overflow-visible">
+        <Card className="shadow-none border border-gray-100 rounded-[32px] overflow-visible bg-white">
           <CardBody className="p-6 gap-6">
             {!isPreviewPage && <HorizontalStepper currentStep={step} />}
-            
+
+            {isReadOnly && (
+              <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-700 text-xs font-bold text-center">
+                This request is submitted and cannot be edited.
+              </div>
+            )}
             <div className={`${!isPreviewPage ? 'mt-2' : ''} animate-in fade-in slide-in-from-right-4 duration-300`}>
               {children}
             </div>
@@ -39,10 +59,10 @@ export default function FillDetailsLayout({ step, onBack, onNext, children }) {
       </div>
 
       {!isPreviewPage && (
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-gray-100 z-50">
-          <Button 
-            onClick={onNext}
-            className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-xl text-lg shadow-lg active:scale-95 transition-transform"
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-gray-100 z-50 flex justify-center">
+          <Button
+            onPress={onNext}
+            className="w-full max-w-md bg-[#1DA1FA] text-white font-bold h-14 rounded-2xl text-lg shadow-lg active:scale-95 transition-transform"
           >
             Continue
           </Button>

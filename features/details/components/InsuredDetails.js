@@ -5,16 +5,17 @@ import { useEffect } from "react";
 
 export default function InsuredDetails() {
   const dispatch = useDispatch();
-  
   const insuredData = useSelector((state) => state.details.insured);
-
-    const state = useSelector((state)=>state);
   
-  useEffect(()=>{
-    console.log("the state ",state)
-  },[state])
+  const docStatus = useSelector((state) => state.details.docStatus);
+  const isReadOnly = docStatus === 1;
 
-
+  const professionOptions = [
+    { label: "Salaried", value: "Salaried" },
+    { label: "Business", value: "Business" },
+    { label: "Pensioners", value: "Pensioners" },
+    { label: "No Income", value: "No Income" }
+  ];
 
   const handleChange = (field, value) => {
     dispatch(updateField({ section: "insured", field, value }));
@@ -24,26 +25,20 @@ export default function InsuredDetails() {
     dispatch(setSameAsPatient(isSelected));
   };
 
-  const inputStyles = {
-    label: "hidden",
-    inputWrapper: [
-      "h-[42px]", "min-h-[42px]", "rounded-[10px]", "border-gray-100", "bg-white",
-      "shadow-none", "transition-none", "group-data-[focus=true]:border-gray-100",
-      "after:hidden", "before:hidden"
-    ],
-    input: "placeholder:text-gray-300 text-gray-700 text-[14px] outline-none",
-  };
-
   const selectStyles = {
     label: "hidden",
-    trigger: [
-      "h-[42px]", "min-h-[42px]", "rounded-[10px]", "border-gray-200", "bg-white",
-      "shadow-none", "flex items-center justify-between", "after:hidden", "before:hidden"
-    ],
-    popoverContent: ["bg-white", "border border-gray-100", "shadow-lg", "rounded-[12px]"],
-    value: "text-[14px] text-gray-700 font-medium pt-0",
+    trigger: "heroui-select-custom",
+    value: "heroui-select-value",
+    popoverContent: "bg-white border border-gray-100 shadow-lg rounded-[12px] p-1",
     innerWrapper: "flex items-center justify-between h-full",
     selectorIcon: "text-gray-400 w-4 h-4 static",
+  };
+
+  const inputStyles = {
+    label: "hidden",
+    inputWrapper: "heroui-input-custom",
+    input: "heroui-input-field",
+    innerWrapper: "h-full flex items-center py-0"
   };
 
   const CustomLabel = ({ children }) => (
@@ -60,6 +55,7 @@ export default function InsuredDetails() {
       <div className="flex items-center justify-between py-2">
         <span className="text-[13px] font-bold text-gray-700">Is The Patient Same As Insured?</span>
         <Checkbox 
+          isDisabled={isReadOnly}
           isSelected={insuredData.isSameAsPatient}
           onValueChange={handleCheckboxToggle}
           radius="sm" 
@@ -72,6 +68,7 @@ export default function InsuredDetails() {
           <div>
             <CustomLabel>Full Name</CustomLabel>
             <Input 
+              isDisabled={isReadOnly}
               value={insuredData.fullName || ""}
               onChange={(e) => handleChange("fullName", e.target.value)}
               placeholder="XXXXXXXXXXXXXX" 
@@ -84,20 +81,21 @@ export default function InsuredDetails() {
             <div className="flex-1">
               <CustomLabel>Date of birth</CustomLabel>
               <Input 
+                isDisabled={isReadOnly}
                 type="date" 
                 value={insuredData.dob || ""}
                 onChange={(e) => handleChange("dob", e.target.value)}
                 variant="bordered" 
                 classNames={{...inputStyles, input: [inputStyles.input, "appearance-none"]}}
-                onClick={(e) => e.target.showPicker?.()}
+                onClick={(e) => !isReadOnly && e.target.showPicker?.()}
               />
             </div>
             <div className="flex-1">
               <CustomLabel>Gender</CustomLabel>
               <Select 
-                placeholder="XXXX" 
+                isDisabled={isReadOnly}
+                placeholder="Select" 
                 variant="bordered" 
-                disableAnimation 
                 classNames={selectStyles}
                 selectedKeys={insuredData.gender ? [insuredData.gender] : []}
                 onSelectionChange={(keys) => handleChange("gender", Array.from(keys)[0])}
@@ -111,6 +109,7 @@ export default function InsuredDetails() {
           <div>
             <CustomLabel>Relationship</CustomLabel>
             <Input 
+              isDisabled={isReadOnly}
               value={insuredData.relationship || ""}
               onChange={(e) => handleChange("relationship", e.target.value)}
               placeholder="XXXXXXXXXXXXXX" 
@@ -121,18 +120,26 @@ export default function InsuredDetails() {
 
           <div>
             <CustomLabel>Profession</CustomLabel>
-            <Input 
-              value={insuredData.profession || ""}
-              onChange={(e) => handleChange("profession", e.target.value)}
-              placeholder="XXXXXXXXXXXXXX" 
+            <Select 
+              isDisabled={isReadOnly}
+              placeholder="Select Profession" 
               variant="bordered" 
-              classNames={inputStyles} 
-            />
+              classNames={selectStyles}
+              selectedKeys={insuredData.profession ? [insuredData.profession] : []}
+              onSelectionChange={(keys) => handleChange("profession", Array.from(keys)[0])}
+            >
+              {professionOptions.map((opt) => (
+                <SelectItem key={opt.value} textValue={opt.label}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </Select>
           </div>
 
           <div>
             <CustomLabel>Company name</CustomLabel>
             <Input 
+              isDisabled={isReadOnly}
               value={insuredData.companyName || ""}
               onChange={(e) => handleChange("companyName", e.target.value)}
               placeholder="XXXXXXXXXXXXXX" 
@@ -144,11 +151,13 @@ export default function InsuredDetails() {
           <div>
             <CustomLabel>Employment since</CustomLabel>
             <Input 
+              isDisabled={isReadOnly}
+              type="date"
               value={insuredData.employmentSince || ""}
               onChange={(e) => handleChange("employmentSince", e.target.value)}
-              placeholder="XXXXXXXXXXXXXX" 
               variant="bordered" 
-              classNames={inputStyles} 
+              classNames={{...inputStyles, input: [inputStyles.input, "appearance-none"]}}
+              onClick={(e) => !isReadOnly && e.target.showPicker?.()}
             />
           </div>
         </div>
