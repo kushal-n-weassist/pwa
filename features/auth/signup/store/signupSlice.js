@@ -74,8 +74,8 @@ const signupSlice = createSlice({
       state.error = null;
     },
   },
-  extraReducers: (builder) => {
-    builder
+  extraReducers: (builders) => {
+    builders
       .addCase(createUser.pending, (state) => {
         state.loading = true;
       })
