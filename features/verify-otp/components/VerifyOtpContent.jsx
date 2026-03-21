@@ -5,6 +5,7 @@ import { Button, InputOtp } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setLoginField, verifyLoginOtp } from "@/features/auth/login/store/loginSlice";
+import toast from "react-hot-toast";
 
 export default function VerifyOtpContent() {
     const dispatch = useDispatch();
@@ -23,6 +24,9 @@ export default function VerifyOtpContent() {
 
         if (verifyLoginOtp.fulfilled.match(result)) {
             router.push("/dashboard");
+        }else if(verifyLoginOtp.rejected.match(result)){
+            console.log("failed in otp verification")
+            toast.error("OTP verification failed");
         }
     };
 

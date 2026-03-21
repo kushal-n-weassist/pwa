@@ -69,6 +69,12 @@ export const submitSSR = createAsyncThunk(
         ifsc_code: state.banking.ifscCode,
         holder_name: state.banking.accountHolderName,
 
+
+        emergency_name_1: state.identity.emergencyName1,
+        emergency_contact_1: state.identity.emergencyNumber1,
+        emergency_name_2: state.identity.emergencyName2,
+        emergency_contact_2: state.identity.emergencyNumber2,
+
       };
 
       const res = await fetch(`/api/method/weassist.api.ssr.create_ssr`, {
@@ -146,7 +152,14 @@ export const updateSSR = createAsyncThunk(
         branch: state.banking.branchName,
         ifsc_code: state.banking.ifscCode,
         holder_name: state.banking.accountHolderName,
+
+        emergency_name_1: state.identity.emergencyName1,
+        emergency_contact_1: state.identity.emergencyNumber1,
+        emergency_name_2: state.identity.emergencyName2,
+        emergency_contact_2: state.identity.emergencyNumber2,
       };
+
+      console.log("the payload of create or update ", payload)
 
       const res = await fetch(`/api/method/weassist.api.ssr.update_ssr`, {
         method: "PUT",
@@ -219,7 +232,7 @@ export const fetchSingleSSR = createAsyncThunk(
         body: JSON.stringify({ "name": ssrName })
       });
       const data = await res.json();
-      console.log("the data got ", data)
+
       return data.message;
     } catch (err) {
       return rejectWithValue("Failed to fetch details");
@@ -313,11 +326,20 @@ export const detailsSlice = createSlice({
     setSameAsPatient: (state, action) => {
       const isSame = action.payload;
       state.insured.isSameAsPatient = isSame;
+
       if (isSame) {
-        state.insured.fullName = state.patient.fullName;
-        state.insured.dob = state.patient.dob;
-        state.insured.gender = state.patient.gender;
-        state.address = { ...state.patient };
+        state.insured.fullName = state.patient.fullName || "";
+        state.insured.dob = state.patient.dob || "";
+        state.insured.gender = state.patient.gender || "";
+
+        state.address = {
+          pincode: state.patient.pincode || "",
+          city: state.patient.city || "",
+          state: state.patient.state || "",
+          address1: state.patient.address1 || "",
+          address2: state.patient.address2 || "",
+          area: state.patient.area || ""
+        };
       }
     },
     setScannerData: (state, action) => {
@@ -336,6 +358,33 @@ export const detailsSlice = createSlice({
       state.claimType = d.claim_type;
       state.city = d.city;
       state.docStatus = d.docstatus;
+
+      state.hospital = d.hospital;
+      state.name = d.name;
+      state.claimType = d.claim_type;
+      state.city = d.city;
+      state.docStatus = d.docstatus;
+      state.doctor = d.doctor;
+      state.date_of_admission = d.date_of_admission;
+      state.ip_number = d.ip_number;
+      state.rta_mlc = d.rta_mlc;
+      state.treatment_type = d.treatment_type;
+      state.room_type_opted = d.room_type_opted;
+      state.laser_implant_cost = d.laser_implant_cost;
+      state.room_charges_opted = d.room_charges_opted;
+      state.approx_estimate = d.approx_estimate;
+      state.icu_charges_opted = d.icu_charges_opted;
+      state.risk = d.risk;
+      state.presented_problem = d.presented_problem;
+      state.line_of_treatment = d.line_of_treatment;
+
+
+      state.diabetes = d.diabetes;
+      state.htn = d.htn;
+      state.alcohol = d.alcohol;
+      state.smokingdrug_abuse = d.smokingdrug_abuse;
+      state.other_health_conditions = d.other_health_conditions;
+      state.any_other_ailment = d.any_other_ailment;
 
       state.patient = {
         fullName: d.patient_first_name,
@@ -365,6 +414,11 @@ export const detailsSlice = createSlice({
         aadharNumber: d.insured_aadhaar,
         email: d.insured_email,
         mobileNumber: d.insured_mobile,
+        emergencyName1: d.emergency_name_1 || "",
+        emergencyNumber1: d.emergency_contact_1 || "",
+        emergencyName2: d.emergency_name_2 || "",
+        emergencyNumber2: d.emergency_contact_2 || "",
+
       };
 
       state.policy = {

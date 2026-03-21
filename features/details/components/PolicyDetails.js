@@ -83,6 +83,7 @@ export default function PolicyDetails() {
             isDisabled={isReadOnly}
             placeholder="Select Company"
             variant="bordered"
+            aria-label="InsuranceCompany"
             classNames={selectStyles}
             isLoading={loadingCompanies}
             selectedKeys={policyData.insuranceCompany ? [policyData.insuranceCompany] : []}
@@ -102,6 +103,7 @@ export default function PolicyDetails() {
             labelPlacement="outside"
             placeholder={policyData.insuranceCompany ? "Select TPA" : "Select Company first"}
             variant="bordered"
+            aria-label="TPA"
             classNames={selectStyles}
             isDisabled={isReadOnly || availableTPAs.length === 0}
             scrollShadow={false}
@@ -168,6 +170,7 @@ export default function PolicyDetails() {
               isDisabled={isReadOnly}
               placeholder="Select"
               variant="bordered"
+              aria-label="PolicyType"
               classNames={selectStyles}
               selectedKeys={policyData.policyType ? [policyData.policyType] : []}
               onSelectionChange={(keys) => handleChange("policyType", Array.from(keys)[0])}
@@ -182,6 +185,7 @@ export default function PolicyDetails() {
               isDisabled={isReadOnly}
               placeholder="Select"
               variant="bordered"
+              aria-label="PolicySubtype"
               classNames={selectStyles}
               selectedKeys={policyData.policySubtype ? [policyData.policySubtype] : []}
               onSelectionChange={(keys) => handleChange("policySubtype", Array.from(keys)[0])}

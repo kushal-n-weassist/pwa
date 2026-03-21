@@ -65,6 +65,7 @@ const loginSlice = createSlice({
     userToken: initialAuth.token,
     loading: false,
     error: null,
+    gender:null
   },
   reducers: {
     setLoginField: (state, action) => {
@@ -100,19 +101,21 @@ const loginSlice = createSlice({
         state.error = null;
       })
       .addCase(verifyLoginOtp.fulfilled, (state, action) => {
-        const { token, email, full_name } = action.payload.message;
+        const { token, email, full_name ,gender} = action.payload.message;
 
         state.loading = false;
         state.isAuthenticated = true;
         state.userToken = token;
         state.email = email;
         state.username = full_name;
+        state.gender = gender
 
         if (typeof window !== "undefined") {
           localStorage.setItem("isLoggedIn", "true");
           localStorage.setItem("userToken", token);
           localStorage.setItem("username", full_name);
           localStorage.setItem("email", email);
+          localStorage.setItem("gender",gender)
 
           document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
         }
@@ -120,6 +123,7 @@ const loginSlice = createSlice({
       .addCase(verifyLoginOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        console.log("login verification failed ",action)
       });
   },
 });

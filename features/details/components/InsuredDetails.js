@@ -96,6 +96,7 @@ export default function InsuredDetails() {
                 isDisabled={isReadOnly}
                 placeholder="Select" 
                 variant="bordered" 
+                aria-label="Gender"
                 classNames={selectStyles}
                 selectedKeys={insuredData.gender ? [insuredData.gender] : []}
                 onSelectionChange={(keys) => handleChange("gender", Array.from(keys)[0])}
@@ -124,6 +125,7 @@ export default function InsuredDetails() {
               isDisabled={isReadOnly}
               placeholder="Select Profession" 
               variant="bordered" 
+              aria-label="Profession"
               classNames={selectStyles}
               selectedKeys={insuredData.profession ? [insuredData.profession] : []}
               onSelectionChange={(keys) => handleChange("profession", Array.from(keys)[0])}

@@ -9,6 +9,7 @@ import jsQR from "jsqr";
 import dynamic from 'next/dynamic';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
+import { resetAllDetails } from '@/features/details/store/detailsSlice';
 
 const Scanner = dynamic(
     () => import('@yudiel/react-qr-scanner').then(m => m.Scanner),
@@ -32,14 +33,18 @@ export default function ScannerPage() {
     const router = useRouter();
     const dispatch = useDispatch();
 
-    // Keep ref in sync with latest permittedHospitals
     useEffect(() => {
         permittedHospitalsRef.current = permittedHospitals;
     }, [permittedHospitals]);
 
+    useEffect(()=>{
+        dispatch(resetAllDetails());
+    },[])
+
     const setScannedDataSync = (data) => {
         scannedDataRef.current = data;
         setScannedData(data);
+        console.log("the scanner data", scannedData);
     };
 
     const setIsProcessingSync = (val) => {
@@ -71,23 +76,28 @@ export default function ScannerPage() {
     const processResult = useCallback((rawValue) => {
         if (!rawValue) return;
 
+        const cleaned = rawValue.trim().replace(/'/g, '"');
+        console.log("the cleaned",cleaned)
+
         try {
             let hospitalId, type, city;
 
-            if (rawValue.startsWith('{')) {
-                const parsed = JSON.parse(rawValue);
+            try {
+                const parsed = JSON.parse(cleaned); 
+                
                 hospitalId = parsed.hospital;
                 type = parsed.type || parsed.claim_type;
                 city = parsed.city;
-            } else {
-                hospitalId = rawValue;
+                console.log("the parsed,hospitalid,type,city",parsed,hospitalId,type,city)
+            } catch {
+                console.log("parse failed")
+                hospitalId = cleaned; 
             }
 
             const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
-            console.log("the match", match);
 
             setScannedDataSync({
-                hospitalId: hospitalId,
+                hospitalId,
                 hospitalName: match ? match.title : "Unknown Hospital",
                 claim_type: type || "Pre-Auth",
                 city: city || "N/A"
@@ -95,17 +105,7 @@ export default function ScannerPage() {
 
             setIsProcessingSync(false);
         } catch (err) {
-            toast.error("Invalid QR: Could not process details.", {
-                duration: 4000,
-                style: {
-                    borderRadius: '20px',
-                    background: '#fff',
-                    color: '#333',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                },
-            });
+            toast.error("Invalid QR: Could not process details.");
             setIsProcessingSync(false);
         }
     }, []);
@@ -118,11 +118,14 @@ export default function ScannerPage() {
     const handleScan = useCallback((result) => {
         if (!result || isProcessingRef.current || scannedDataRef.current) return;
         const rawValue = result[0]?.rawValue || result;
+        console.log("raw value ", rawValue);
+        console.log("the result ", result);
         processResult(rawValue);
     }, [processResult]);
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
+        console.log("the file", file);
         if (!file) return;
 
         e.target.value = '';
@@ -141,6 +144,7 @@ export default function ScannerPage() {
 
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
+                console.log("the code ", code);
 
                 if (code) {
                     processResult(code.data);

@@ -58,7 +58,7 @@ export default function VerticalSummary({ data, onEdit }) {
                   trigger: "py-4 px-0",
                   title: "text-base font-bold",
                   content: "pb-6 pt-2 px-0",
-                  indicator: "text-gray-400"
+                  indicator: "text-black  "
                 }}
                 title={
                   <div className="flex items-center">

@@ -2,14 +2,28 @@
 
 import React, { useState } from "react";
 import { Button } from "@heroui/react";
+import { useDispatch, useSelector } from "react-redux";
+import { raiseTicket, resetTicketState } from "@/features/issue-raise/storage/issueraiseSlice";
+import toast from "react-hot-toast";
+import BouncingDots from "@/components/BouncingDots";
 
-export default function RaiseIssueSheet({ onClose, onSuccess }) {
+export default function RaiseIssueSheet({ ssrId, onClose, onSuccess }) {
     const [issue, setIssue] = useState("");
+    const dispatch = useDispatch();
+    const { loading } = useSelector((state) => state.ticket);
 
-    const handleSubmit = () => {
-        if (issue.trim()) {
-            console.log("Issue raised:", issue);
-            onSuccess();
+    const handleSubmit = async () => {
+        if (!issue.trim()) return;
+
+        const result = await dispatch(raiseTicket({ ssr_id: ssrId, reason: issue }));
+
+        if (raiseTicket.fulfilled.match(result)) {
+            toast.success("Ticket raised successfully");
+            dispatch(resetTicketState());
+            setIssue("");
+            onSuccess?.();
+        } else {
+            toast.error(result.payload || "Failed to raise ticket");
         }
     };
 
@@ -24,16 +38,15 @@ export default function RaiseIssueSheet({ onClose, onSuccess }) {
             <textarea
                 value={issue}
                 onChange={(e) => setIssue(e.target.value)}
-                placeholder="Lorem Ipsum"
+                placeholder="Describe the issue..."
                 className="w-full h-32 p-4 bg-[#F5F5F5] rounded-xl text-sm text-gray-900 placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#1DA1FA]"
             />
-
             <Button
                 onPress={handleSubmit}
-                isDisabled={!issue.trim()}
+                isDisabled={!issue.trim() || loading}
                 className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-xl text-lg shadow-lg disabled:opacity-50"
             >
-                Raise Issue
+                {loading ? <BouncingDots /> : "Raise Issue"}
             </Button>
         </div>
     );
