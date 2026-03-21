@@ -11,6 +11,8 @@ export default function PatientDetails() {
   const docStatus = useSelector((state) => state.details.docStatus);
   const isReadOnly = docStatus === 1;
 
+  console.log("is readonly ",isReadOnly)
+
   const handleChange = (field, value) => {
     dispatch(updateField({ section: "patient", field, value }));
   };
@@ -77,6 +79,7 @@ export default function PatientDetails() {
               placeholder="XXXX"
               label=''
               variant="bordered"
+              aria-label="Gender"
               disableAnimation
               classNames={selectStyles}
               selectedKeys={patientData.gender ? [patientData.gender] : []}
@@ -108,6 +111,7 @@ export default function PatientDetails() {
               isDisabled={isReadOnly}
               placeholder="XXXX"
               variant="bordered"
+              aria-label="Area" 
               label=''
               classNames={selectStyles}
               selectedKeys={patientData.area ? [patientData.area] : []}

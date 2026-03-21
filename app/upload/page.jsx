@@ -6,8 +6,9 @@ import { ChevronLeft, FileUp, CheckCircle2, AlertCircle, Camera, File } from "lu
 import { useRouter } from "next/navigation";
 import { setUploadFile } from "@/features/upload/store/uploadSlice";
 import { setFile } from "@/features/upload/store/fileStore";
-import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+import { setSameAsPatient } from "@/features/details/store/detailsSlice";
+import { useDispatch } from "react-redux";
 
 
 function parsePAN(text) {
@@ -90,9 +91,10 @@ const DOC_FIELDS = {
 
 export default function UploadDocuments() {
   const state = useSelector((state)=>state);
-  console.log("the state ",state);
   const router = useRouter();
-  const [isSameAsInsured, setIsSameAsInsured] = useState(false);
+  const isSameAsInsured = useSelector(state => state.details.insured.isSameAsPatient);
+  const dispatch = useDispatch();
+
 
   const handleManualEntry = () => router.push("/details");
   const handleContinue = () => router.push("/details");
@@ -124,7 +126,7 @@ export default function UploadDocuments() {
               </span>
               <Checkbox
                 isSelected={isSameAsInsured}
-                onValueChange={setIsSameAsInsured}
+                onValueChange={(val) => dispatch(setSameAsPatient(val))}
                 size="sm"
                 classNames={{ wrapper: "after:bg-[#1DA1FA]" }}
               />

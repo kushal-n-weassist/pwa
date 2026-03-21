@@ -7,6 +7,9 @@ import { Button, Avatar } from "@heroui/react";
 import { logout } from "@/features/auth/login/store/loginSlice";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Image from "next/image";
+import maleprofile from '@/public/maleprofile.svg';
+import femaleprofile from '@/public/femaleprofile.svg';
 import { fetchLegalContent, selectLegalContent, selectLegalLoading } from "@/features/profile/store/legalSlice";
 
 
@@ -46,8 +49,8 @@ const menuItems = [
 export default function ProfilePage() {
 
   const state = useSelector((state) => state);
-  
-  const login = useSelector((state)=>state.login);
+
+  const login = useSelector((state) => state.login);
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -73,7 +76,9 @@ export default function ProfilePage() {
       router.replace('/auth/login');
     }
   }, [login.isAuthenticated, router]);
-  const { username, email } = login;
+  const { username, email, gender } = login;
+
+  console.log("the login slice ", login);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
@@ -87,9 +92,12 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex flex-col items-center gap-3 z-10">
-          <Avatar
-            src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-            className="w-28 h-28 text-large border-4 border-white/20"
+          <Image
+            src={gender === "female" ? femaleprofile : maleprofile}
+            alt="profile"
+            width={112}
+            height={112}
+            className="w-28 h-28 rounded-full border-4 border-white/20 flex-shrink-0"
           />
           <div className="text-center">
             <h2 className="text-xl font-bold text-white">{username}</h2>

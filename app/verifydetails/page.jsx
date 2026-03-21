@@ -10,19 +10,32 @@ import ProblemTreatmentStep from "@/features/verifydetails/components/ProblemTre
 import HealthConditionsStep from "@/features/verifydetails/components/HealthConditionsStep";
 import OtpVerificationSheet from "@/features/verifydetails/components/Otpverification";
 import RaiseIssueSheet from "@/features/verifydetails/components/RaiseIssueSheet";
+import { generateVerifyOtp } from "@/features/verifydetails/store/verifySlice";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+
 
 export default function VerifyDetailsPage() {
     const [step, setStep] = useState(1);
-    const [activeModal, setActiveModal] = useState(null); 
+    const [activeModal, setActiveModal] = useState(null);
     const router = useRouter();
+    const { email } = useSelector((state) => state.login);
+    const { selectedSSRName } = useSelector((state) => state.dashboard);
+    const dispatch = useDispatch();
+    console.log("selected ", selectedSSRName);
 
-    const handleAction = () => {
+    const handleAction = async () => {
         if (step < 3) {
             setStep((s) => s + 1);
         } else {
-            setActiveModal("otp");
+            const result = await dispatch(generateVerifyOtp(email));
+
+            if (generateVerifyOtp.fulfilled.match(result)) {
+                setActiveModal("otp");
+            }
         }
     };
+
 
     const prevStep = () => {
         if (step === 1) router.back();
@@ -55,7 +68,7 @@ export default function VerifyDetailsPage() {
             <div className="flex-1 p-5 pb-40 overflow-y-auto">
                 <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
                     <h2 className="text-xl font-bold text-gray-900 mb-1">Medical details</h2>
-                    <p className="text-sm text-gray-500 mb-6 font-normal">Fill in all the appropriate details.</p>
+                    <p className="text-sm text-gray-500 mb-6 font-normal"></p>
 
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -129,7 +142,7 @@ export default function VerifyDetailsPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
-                        <RaiseIssueSheet onClose={closeModal} onSuccess={handleIssueSuccess} />
+                        <RaiseIssueSheet ssrId={selectedSSRName} onClose={closeModal} onSuccess={handleIssueSuccess} />
                     </div>
                 </div>
             )}

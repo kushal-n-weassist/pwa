@@ -64,7 +64,8 @@ export default function IdentityContact() {
           <Input isDisabled={isReadOnly} type="tel" placeholder="XXXXXXXXXX" variant="bordered" classNames={inputStyles} value={identityData.mobileNumber || ""} onChange={(e) => handleChange("mobileNumber", e.target.value)} />
         </div>
 
-        {/* --- Emergency Contact 1 --- */}
+ 
+ 
         <div className="mt-4 pt-4 border-t border-gray-100">
           <h3 className="text-[16px] font-bold text-gray-900 mb-3">Emergency Contact 1</h3>
           <div className="flex flex-col gap-4">
@@ -84,7 +85,7 @@ export default function IdentityContact() {
           <div className="flex flex-col gap-4">
             <div>
               <CustomLabel>Contact Name</CustomLabel>
-              <Input isDisabled={isReadOnly} placeholder="Full Name" variant="bordered" classNames={inputStyles} value={identityData.emergencyName2 || ""} onChange={(e) => handleChange("emergencyName2", e.target.value)} />
+              <Input isDisabled={isReadOnly} placeholder="Full Name" variant="bordered" classNames={inputStyles} value={identityData.emergencyName2  || ""} onChange={(e) => handleChange("emergencyName2", e.target.value)} />
             </div>
             <div>
               <CustomLabel>Contact Number</CustomLabel>

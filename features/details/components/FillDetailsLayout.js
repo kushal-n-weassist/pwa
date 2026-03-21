@@ -47,8 +47,18 @@ export default function FillDetailsLayout({ step, onBack, onNext, children }) {
             {!isPreviewPage && <HorizontalStepper currentStep={step} />}
 
             {isReadOnly && (
-              <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-amber-700 text-xs font-bold text-center">
-                This request is submitted and cannot be edited.
+              <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center gap-3">
+                <div className="bg-blue-500/10 p-2 rounded-full">
+                  <UserRound size={18} className="text-[#1DA1FA]" />
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-[#1DA1FA] text-[13px] font-bold">
+                    Viewing Submitted Request
+                  </p>
+                  <p className="text-blue-600/70 text-[11px] font-medium">
+                    This information is currently  available here for your reference.
+                  </p>
+                </div>
               </div>
             )}
             <div className={`${!isPreviewPage ? 'mt-2' : ''} animate-in fade-in slide-in-from-right-4 duration-300`}>
