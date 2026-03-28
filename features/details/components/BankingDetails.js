@@ -1,6 +1,6 @@
 import { Input } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateField, validateBank } from "../store/detailsSlice";
+import { updateField, validateBank,clearBankError } from "../store/detailsSlice";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -12,33 +12,37 @@ export default function BankingDetails() {
     isValidatingBank,
     bankError,
     docStatus,
-    bankSuccess, 
+    bankSuccess,
 
   } = useSelector((state) => state.details);
 
   const isReadOnly = docStatus === 1;
 
-  const handleChange = (field, value) => {
-    const formattedValue = field === "ifscCode" ? value.toUpperCase() : value;
-    dispatch(updateField({ section: "banking", field, value: formattedValue }));
-  };
+const handleChange = (field, value) => {
+  const formattedValue = field === "ifscCode" ? value.toUpperCase() : value;
+  dispatch(updateField({ section: "banking", field, value: formattedValue }));
+
+  if (field === "ifscCode") {
+    dispatch(updateField({ section: "banking", field: "bankName", value: "" }));
+    dispatch(clearBankError()); 
+  }
+};
 
   useEffect(() => {
-  if (bankSuccess) toast.success(bankSuccess);
-}, [bankSuccess]);
+    if (bankError) toast.error(bankError);
+  }, [bankError]);
 
-useEffect(() => {
-  if (bankError) toast.error(bankError);
-}, [bankError]);
+  useEffect(() => {
+    if (bankSuccess) toast.success(bankSuccess);
+  }, [bankSuccess]);
+
+  useEffect(() => {
+    if (bankError) toast.error(bankError);
+  }, [bankError]);
 
   const handleBlur = (field, currentValue) => {
-    // if (isReadOnly) return;
-
-    const ifsc = field === "ifscCode" ? currentValue : bankingData.ifscCode;
-    const bankName = field === "bankName" ? currentValue : bankingData.bankName;
-
-    if (ifsc?.length === 11 && bankName?.length > 2) {
-      dispatch(validateBank({ ifsc, bank_name: bankName }));
+    if (field === "ifscCode" && currentValue?.length === 11) {
+      dispatch(validateBank({ ifsc: currentValue }));
     }
   };
 
@@ -84,13 +88,13 @@ useEffect(() => {
         <div>
           <CustomLabel>Bank Name</CustomLabel>
           <Input
-            isDisabled={isReadOnly} //
+            isDisabled
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}
             value={bankingData.bankName || ""}
             onChange={(e) => handleChange("bankName", e.target.value)}
-            onBlur={(e) => handleBlur("bankName", e.target.value)} />
+          />
         </div>
 
         <div>

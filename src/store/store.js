@@ -10,6 +10,7 @@ import uploadReducer from "@/features/upload/store/uploadSlice";
 import legalReducer from "@/features/profile/store/legalSlice";
 import verifyReducer from "@/features/verifydetails/store/verifySlice";
 import ticketReducer from "@/features/issue-raise/storage/issueraiseSlice";
+import { digioApi } from "./digioApi";
 
 const dashboardPersistConfig = {
   key: "dashboard",
@@ -25,7 +26,8 @@ const rootReducer = combineReducers({
   upload: uploadReducer,
   legal: legalReducer,
   verify: verifyReducer,
-  ticket:ticketReducer
+  ticket:ticketReducer,
+  [digioApi.reducerPath]: digioApi.reducer,
 });
 
 const persistConfig = {
@@ -41,7 +43,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(digioApi.middleware),
 });
 
 export const persistor = persistStore(store);

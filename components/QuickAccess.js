@@ -5,7 +5,7 @@ import archivedrequest from "@/public/arcchivedrequest1.svg";
 import Link from 'next/link';
 
 const menuItems = [
-  { id: 1, label: "New Request", icon: NewRequest, w: 95, h: 85, href: '/newrequest' },
+  { id: 1, label: "New Request", icon: NewRequest, w: 95, h: 85, href: '/scanner' },
   { id: 2, label: "Request Summary", icon: RequestSummary, w: 0, h: 95, href: '' },
   { id: 3, label: "Archived Request", icon: archivedrequest, w: 105, h: 105, href: '' },
 ];

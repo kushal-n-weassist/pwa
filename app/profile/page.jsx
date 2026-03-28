@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ChevronLeft, Shield, FileText, Settings, Phone, LogOut, ChevronRight } from "lucide-react";
 import { Button, Avatar } from "@heroui/react";
 import { logout } from "@/features/auth/login/store/loginSlice";
@@ -35,7 +36,7 @@ const menuItems = [
     label: "Settings",
     icon: <Settings size={20} className="text-[#1DA1FA]" />,
     bgColor: "bg-blue-50",
-    href: "/settings",
+    href: "/profile/settings",
   },
   {
     id: 4,
@@ -61,9 +62,7 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    console.log("calling")
     dispatch(fetchLegalContent("privacy_policy"));
-    console.log("called privay")
     dispatch(fetchLegalContent("terms_of_use"));
     dispatch(fetchLegalContent("contact_us"));
   }, []);
@@ -78,7 +77,6 @@ export default function ProfilePage() {
   }, [login.isAuthenticated, router]);
   const { username, email, gender } = login;
 
-  console.log("the login slice ", login);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
@@ -103,33 +101,28 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold text-white">{username}</h2>
             <p className="text-sm text-white/80">{email}</p>
           </div>
-          <Button
-            className="bg-white text-[#1DA1FA] font-semibold rounded-full px-8 mt-2 shadow-md active:scale-95 transition-transform"
-            size="sm"
-          >
-            Edit Profile
-          </Button>
+         
         </div>
       </div>
 
       <div className="bg-white flex-grow rounded-t-[40px] -mt-12 p-6 flex flex-col shadow-[0_-4px_10px_rgba(0,0,0,0.05)] relative z-20">
         <div className="flex flex-col gap-4 mt-4">
           {menuItems.map((item) => (
-            <button
+            <Link
               key={item.id}
-              onClick={() => router.push(item.href)}
+              href={item.href}
               className="flex items-center justify-between p-2 w-full active:bg-gray-50 rounded-xl transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className={`p-3 rounded-xl ${item.bgColor}`}>
-                  {item.icon}
+                   {item.icon}
                 </div>
                 <span className="text-gray-800 font-medium text-sm">
                   {item.label}
                 </span>
               </div>
               <ChevronRight size={20} className="text-gray-400" />
-            </button>
+            </Link>
           ))}
         </div>
 

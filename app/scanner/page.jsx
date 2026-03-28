@@ -37,9 +37,9 @@ export default function ScannerPage() {
         permittedHospitalsRef.current = permittedHospitals;
     }, [permittedHospitals]);
 
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(resetAllDetails());
-    },[])
+    }, [])
 
     const setScannedDataSync = (data) => {
         scannedDataRef.current = data;
@@ -77,21 +77,30 @@ export default function ScannerPage() {
         if (!rawValue) return;
 
         const cleaned = rawValue.trim().replace(/'/g, '"');
-        console.log("the cleaned",cleaned)
+        console.log("the cleaned", cleaned);
 
         try {
             let hospitalId, type, city;
 
             try {
-                const parsed = JSON.parse(cleaned); 
-                
+                const parsed = JSON.parse(cleaned);
                 hospitalId = parsed.hospital;
                 type = parsed.type || parsed.claim_type;
                 city = parsed.city;
-                console.log("the parsed,hospitalid,type,city",parsed,hospitalId,type,city)
+                console.log("parsed QR:", parsed, hospitalId, type, city);
             } catch {
-                console.log("parse failed")
-                hospitalId = cleaned; 
+                console.log("JSON parse failed — treating as plain hospital ID");
+                hospitalId = cleaned;
+            }
+
+            // All 3 fields are required — any missing = invalid hospital QR
+            if (!hospitalId || !type || !city) {
+                toast.error("Invalid QR code. Please scan a hospital QR code.", {
+                    duration: 4000,
+                    style: { borderRadius: '20px', background: '#fff', color: '#333', fontSize: '14px', fontWeight: 'bold' },
+                });
+                setIsProcessingSync(false);
+                return;
             }
 
             const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
@@ -99,13 +108,16 @@ export default function ScannerPage() {
             setScannedDataSync({
                 hospitalId,
                 hospitalName: match ? match.title : "Unknown Hospital",
-                claim_type: type || "Pre-Auth",
-                city: city || "N/A"
+                claim_type: type,
+                city,
             });
 
             setIsProcessingSync(false);
         } catch (err) {
-            toast.error("Invalid QR: Could not process details.");
+            toast.error("Could not read QR code. Please try again.", {
+                duration: 4000,
+                style: { borderRadius: '20px', background: '#fff', color: '#333', fontSize: '14px', fontWeight: 'bold' },
+            });
             setIsProcessingSync(false);
         }
     }, []);
@@ -286,16 +298,18 @@ export default function ScannerPage() {
 
                         <div className="space-y-4 mb-8">
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Hospital</span>
-                                <span className="text-gray-900 font-black">{scannedData.hospitalName}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Hospital</span>
+                                <span className="text-gray-900 font-black text-right">{scannedData.hospitalName}</span>
                             </div>
+
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Claim Type</span>
-                                <span className="text-[#1DA1FA] font-black uppercase">{scannedData.claim_type}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Claim Type</span>
+                                <span className="text-[#1DA1FA] font-black uppercase text-right">{scannedData.claim_type}</span>
                             </div>
+
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Location</span>
-                                <span className="text-gray-900 font-black">{scannedData.city}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Location</span>
+                                <span className="text-gray-900 font-black text-right">{scannedData.city}</span>
                             </div>
                         </div>
 

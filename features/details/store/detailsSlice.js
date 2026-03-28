@@ -69,6 +69,8 @@ export const submitSSR = createAsyncThunk(
         ifsc_code: state.banking.ifscCode,
         holder_name: state.banking.accountHolderName,
 
+        same_as_insured: state.insured.same_as_insured ?? 0,
+        same_as_patient: state.insured.same_as_insured ?? 0,
 
         emergency_name_1: state.identity.emergencyName1,
         emergency_contact_1: state.identity.emergencyNumber1,
@@ -137,6 +139,7 @@ export const updateSSR = createAsyncThunk(
         insured_address_line1: state.address.address1,
         insured_address_line2: state.address.address2,
 
+        same_as_insured: state.insured.same_as_insured ?? 0,
         insurance_company: state.policy.insuranceCompany,
         tpa: state.policy.tpa,
         policy_number: state.policy.policyNumber,
@@ -218,6 +221,30 @@ export const fetchHospitals = createAsyncThunk(
 );
 
 
+export const fetchPincodeDetails = createAsyncThunk(
+  "details/fetchPincodeDetails",
+  async (pincode, { rejectWithValue, getState }) => {
+    try {
+      const token = getState().login?.userToken;
+      const res = await fetch("/api/method/weassist.api.ssr.fetch_pincode_details", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Basic ${token}` : "",
+        },
+        body: JSON.stringify({ pincode }),
+      });
+      const data = await res.json();
+      if (!data.message?.success) return rejectWithValue("Invalid pincode");
+      return data.message.data;
+    } catch {
+      return rejectWithValue("Failed to fetch pincode details");
+    }
+  }
+);
+
+
+
 export const fetchSingleSSR = createAsyncThunk(
   "dashboard/fetchSingleSSR",
   async (ssrName, { rejectWithValue, getState }) => {
@@ -241,10 +268,9 @@ export const fetchSingleSSR = createAsyncThunk(
 );
 
 
-
 export const validateBank = createAsyncThunk(
   "details/validateBank",
-  async ({ ifsc, bank_name }, { rejectWithValue, getState }) => {
+  async ({ ifsc }, { rejectWithValue, getState }) => {
     try {
       const token = getState().login?.userToken;
       const res = await fetch("/api/method/weassist.api.ssr.validate_bank_account", {
@@ -253,10 +279,7 @@ export const validateBank = createAsyncThunk(
           "Content-Type": "application/json",
           Authorization: token ? `Basic ${token}` : "",
         },
-        body: JSON.stringify({
-          ifsc: ifsc,
-          bank_name: toTitleCase(bank_name)
-        }),
+        body: JSON.stringify({ ifsc }),
       });
 
       const data = await res.json();
@@ -312,6 +335,10 @@ const initialState = {
   isSubmitting: false,
   submitError: null,
   submissionSuccess: false,
+  isUpdate: false,
+  pincodeAreas: [],
+  isFetchingPincode: false,
+  pincodeError: null,
 
 };
 
@@ -326,6 +353,7 @@ export const detailsSlice = createSlice({
     setSameAsPatient: (state, action) => {
       const isSame = action.payload;
       state.insured.isSameAsPatient = isSame;
+      state.insured.same_as_insured = isSame ? 1 : 0;
 
       if (isSame) {
         state.insured.fullName = state.patient.fullName || "";
@@ -353,11 +381,13 @@ export const detailsSlice = createSlice({
 
     setAllDetails: (state, action) => {
       const d = action.payload;
+      console.log("[setAllDetails] same_as_insured from API:", d.same_as_insured);
       state.hospital = d.hospital;
       state.name = d.name;
       state.claimType = d.claim_type;
       state.city = d.city;
       state.docStatus = d.docstatus;
+      state.isUpdate = true;
 
       state.hospital = d.hospital;
       state.name = d.name;
@@ -398,8 +428,15 @@ export const detailsSlice = createSlice({
         address2: d.patient_address_line2,
       };
 
+      // The backend seems to use either same_as_insured or same_as_patient, so we check both to ensure the checkbox is checked on reload
+      // If the explicit flag is missing from the backend response, fallback to checking if the name and DOB match.
+      const isNamesMatch = d.patient_first_name && d.patient_first_name === d.insured_first_name;
+      const isDobMatch = d.patient_dob && d.patient_dob === d.insured_dob;
+      const sameAsVal = d.same_as_insured || d.same_as_patient || (isNamesMatch && isDobMatch ? 1 : 0);
+      
       state.insured = {
-        isSameAsPatient: d.patient_first_name === d.insured_first_name,
+        isSameAsPatient: !!sameAsVal && sameAsVal !== 0,
+        same_as_insured: sameAsVal ? 1 : 0,
         fullName: d.insured_first_name,
         dob: d.insured_dob,
         gender: d.insured_gender,
@@ -435,6 +472,7 @@ export const detailsSlice = createSlice({
 
       state.address = {
         pincode: d.insured_pin_code,
+        area: d.insured_area,
         city: d.insured_city,
         state: d.insured_state,
         address1: d.insured_address_line1,
@@ -451,16 +489,21 @@ export const detailsSlice = createSlice({
     },
 
     resetSuccessState: (state) => {
-      // state.submissionSuccess = false;
       state.submitError = null;
-      // We usually keep lastCreatedSsr so the success page can still show the ID 
-      // until the user fully navigates away.
+      state.isUpdate = false;
     },
 
 
     resetAllDetails: () => {
       return initialState;
     },
+
+    clearBankError: (state) => {
+      state.bankError = null;
+      state.bankSuccess = null;
+    },
+
+
   },
   extraReducers: (builder) => {
     builder
@@ -486,11 +529,12 @@ export const detailsSlice = createSlice({
       })
       .addCase(validateBank.fulfilled, (state, action) => {
         state.isValidatingBank = false;
-        state.bankSuccess = action.payload.message; // "Valid IFSC and bank name matched"
+        state.bankSuccess = action.payload.message;
+        state.banking.bankName = action.payload.message;
       })
       .addCase(validateBank.rejected, (state, action) => {
         state.isValidatingBank = false;
-        state.bankError = action.payload; // "Error validating IFSC"
+        state.bankError = action.payload;
       })
       .addCase(submitSSR.pending, (state) => {
         state.isSubmitting = true;
@@ -521,15 +565,29 @@ export const detailsSlice = createSlice({
       .addCase(updateSSR.fulfilled, (state, action) => {
         state.isSubmitting = false;
         state.submissionSuccess = true;
-        console.log("the f payload ", action);
-        // state.lastCreatedSsr = action.payload.name || action.payload.ssr;
+        state.isUpdate = true;
+        state.lastCreatedSsr = action.payload?.name || action.payload?.ssr || state.name || "";
       })
       .addCase(updateSSR.rejected, (state, action) => {
         state.isSubmitting = false;
         state.submitError = action.payload;
-      });
+      })
+      .addCase(fetchPincodeDetails.pending, (state) => {
+        state.isFetchingPincode = true;
+        state.pincodeError = null;
+        state.pincodeAreas = [];
+      })
+      .addCase(fetchPincodeDetails.fulfilled, (state, action) => {
+        state.isFetchingPincode = false;
+        state.pincodeAreas = action.payload;
+      })
+      .addCase(fetchPincodeDetails.rejected, (state, action) => {
+        state.isFetchingPincode = false;
+        state.pincodeError = action.payload;
+        state.pincodeAreas = [];
+      })
   },
 });
 
-export const { updateField, setScannerData, setSameAsPatient, resetSuccessState, resetAllDetails, setAllDetails, } = detailsSlice.actions;
+export const { updateField, setScannerData, setSameAsPatient, resetSuccessState, resetAllDetails, setAllDetails, clearBankError } = detailsSlice.actions;
 export default detailsSlice.reducer;

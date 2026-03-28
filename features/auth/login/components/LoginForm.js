@@ -6,11 +6,15 @@ import { FaGoogle, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { setLoginField, generateLoginOtp } from "../../login/store/loginSlice";
+import { setLoginField, generateLoginOtp, setAuthToken } from "../../login/store/loginSlice";
 import { z } from "zod";
 import toast from "react-hot-toast";
 import BouncingDots from "@/components/BouncingDots";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useLinkedIn } from "react-linkedin-login-oauth2";
+import FacebookLogin from "@greatsumini/react-facebook-login";
 
+const FRAPPE_URL = process.env.NEXT_PUBLIC_FRAPPE_URL;
 
 const loginSchema = z.object({
     email: z
@@ -19,16 +23,112 @@ const loginSchema = z.object({
         .email("Please enter a valid email address"),
 });
 
-
-
-
 export default function LoginForm() {
     const dispatch = useDispatch();
     const router = useRouter();
 
     const { email, loading } = useSelector((state) => state.login);
     const [emailError, setEmailError] = useState("");
+    const [googleLoading, setGoogleLoading] = useState(false);
+    const [linkedInLoading, setLinkedInLoading] = useState(false);
+    const [facebookLoading, setFacebookLoading] = useState(false);
     const [mounted, setMounted] = useState(false);
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setGoogleLoading(true);
+            try {
+                console.log("Google token received:", tokenResponse.access_token);
+                // TODO: uncomment when backend is ready
+                // const res = await fetch(`${FRAPPE_URL}/api/method/weassist.api.auth.google_login`, {
+                //     method: "POST",
+                //     headers: { "Content-Type": "application/json" },
+                //     body: JSON.stringify({ token: tokenResponse.access_token }),
+                // });
+                // const data = await res.json();
+                // if (data.message?.success) {
+                //     dispatch(setAuthToken(data.message.token));
+                //     localStorage.setItem("userToken", data.message.token);
+                //     toast.success("Logged in successfully");
+                //     router.push("/dashboard");
+                // } else {
+                //     toast.error(data.message?.message || "Login failed");
+                // }
+                toast.success("Google token received — backend integration pending");
+            } catch {
+                toast.error("Something went wrong. Please try again.");
+            } finally {
+                setGoogleLoading(false);
+            }
+        },
+        onError: () => {
+            toast.error("Google login failed. Please try again.");
+            setGoogleLoading(false);
+        },
+    });
+
+    const { linkedInLogin } = useLinkedIn({
+        clientId: process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID,
+        redirectUri: "http://localhost:3000/auth/linkedin/callback",
+        scope: "openid profile email",
+        onSuccess: async (code) => {
+            setLinkedInLoading(true);
+            try {
+                console.log(" LinkedIn code received:", code);
+                // TODO: uncomment when backend is ready
+                // const res = await fetch(`${FRAPPE_URL}/api/method/weassist.api.auth.linkedin_login`, {
+                //     method: "POST",
+                //     headers: { "Content-Type": "application/json" },
+                //     body: JSON.stringify({ code }),
+                // });
+                // const data = await res.json();
+                // if (data.message?.success) {
+                //     dispatch(setAuthToken(data.message.token));
+                //     localStorage.setItem("userToken", data.message.token);
+                //     toast.success("Logged in successfully");
+                //     router.push("/dashboard");
+                // } else {
+                //     toast.error(data.message?.message || "Login failed");
+                // }
+                toast.success("LinkedIn code received — backend integration pending");
+            } catch {
+                toast.error("Something went wrong. Please try again.");
+            } finally {
+                setLinkedInLoading(false);
+            }
+        },
+        onError: () => {
+            toast.error("LinkedIn login failed. Please try again.");
+            setLinkedInLoading(false);
+        },
+    });
+
+    const handleFacebookSuccess = async (response) => {
+        setFacebookLoading(true);
+        try {
+            console.log("Facebook token received:", response.accessToken);
+            // TODO: uncomment when backend is ready
+            // const res = await fetch(`${FRAPPE_URL}/api/method/weassist.api.auth.facebook_login`, {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify({ token: response.accessToken }),
+            // });
+            // const data = await res.json();
+            // if (data.message?.success) {
+            //     dispatch(setAuthToken(data.message.token));
+            //     localStorage.setItem("userToken", data.message.token);
+            //     toast.success("Logged in successfully");
+            //     router.push("/dashboard");
+            // } else {
+            //     toast.error(data.message?.message || "Login failed");
+            // }
+            toast.success("Facebook token received — backend integration pending");
+        } catch {
+            toast.error("Something went wrong. Please try again.");
+        } finally {
+            setFacebookLoading(false);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -77,7 +177,7 @@ export default function LoginForm() {
                             inputWrapper: [
                                 "input-wrapper-base",
                                 hasError ? "input-wrapper-error" : "input-wrapper-normal",
-                                "h-full","flex","items-center", "py-3",
+                                "h-full", "flex", "items-center", "py-3",
                             ],
                             input: "input-base text-lg",
                         }}
@@ -93,7 +193,7 @@ export default function LoginForm() {
                     <Button
                         isDisabled={loading}
                         onPress={handleContinue}
-                        className="bg-white primary-color-blue  font-bold h-14 rounded-xl w-full text-lg shadow-lg active:scale-95 transition-transform"
+                        className="bg-white primary-color-blue font-bold h-14 rounded-xl w-full text-lg shadow-lg active:scale-95 transition-transform"
                     >
                         {loading ? <BouncingDots /> : "Continue"}
                     </Button>
@@ -107,14 +207,50 @@ export default function LoginForm() {
                     </div>
 
                     <div className="flex gap-6">
-                        <button className="bg-white w-10 h-10 rounded-full flex items-center justify-center">
-                            <FaGoogle className="text-red-500" />
+                        {/* Google */}
+                        <button
+                            onClick={() => handleGoogleLogin()}
+                            disabled={googleLoading}
+                            className="bg-white w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                        >
+                            {googleLoading
+                                ? <span className="w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
+                                : <FaGoogle className="text-red-500" />
+                            }
                         </button>
-                        <button className="bg-white w-10 h-10 rounded-full flex items-center justify-center">
-                            <FaFacebook className="text-blue-600" />
-                        </button>
-                        <button className="bg-white w-10 h-10 rounded-full flex items-center justify-center">
-                            <FaLinkedin className="text-blue-700" />
+
+                        {/* Facebook */}
+                        <FacebookLogin
+                            appId={process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}
+                            onSuccess={handleFacebookSuccess}
+                            onFail={() => {
+                                toast.error("Facebook login failed. Please try again.");
+                                setFacebookLoading(false);
+                            }}
+                            render={({ onClick }) => (
+                                <button
+                                    onClick={onClick}
+                                    disabled={facebookLoading}
+                                    className="bg-white w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                                >
+                                    {facebookLoading
+                                        ? <span className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                                        : <FaFacebook className="text-blue-600" />
+                                    }
+                                </button>
+                            )}
+                        />
+
+                        {/* LinkedIn */}
+                        <button
+                            onClick={linkedInLogin}
+                            disabled={linkedInLoading}
+                            className="bg-white w-10 h-10 rounded-full flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                        >
+                            {linkedInLoading
+                                ? <span className="w-4 h-4 border-2 border-gray-300 border-t-blue-700 rounded-full animate-spin" />
+                                : <FaLinkedin className="text-blue-700" />
+                            }
                         </button>
                     </div>
 

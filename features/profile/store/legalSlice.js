@@ -6,7 +6,6 @@ export const fetchLegalContent = createAsyncThunk(
     async (field, { rejectWithValue,getState }) => {
         try {
             const token = getState().login?.userToken;
-            console.log("calling legal content ", field)
             const response = await fetch(
                 "/api/method/weassist.api.generic.get_legal_content",
                 {

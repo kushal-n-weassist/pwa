@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setLoginField, verifyLoginOtp } from "@/features/auth/login/store/loginSlice";
 import toast from "react-hot-toast";
+import BouncingDots from "@/components/BouncingDots";
 
 export default function VerifyOtpContent() {
     const dispatch = useDispatch();
@@ -63,12 +64,11 @@ export default function VerifyOtpContent() {
                 </div>
 
                 <Button
-                    isLoading={loading}
                     onPress={handleVerifyLogin}
-                    isDisabled={otp.length !== 6}
+                    isDisabled={otp.length !== 6 || loading}
                     className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-xl shadow-lg mt-2 active:scale-95 transition-transform"
                 >
-                    Verify & Login
+                    {loading ? <BouncingDots /> : "Verify & Login"}
                 </Button>
 
                 <button
