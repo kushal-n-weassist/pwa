@@ -4,6 +4,12 @@ import { updateField, validateBank,clearBankError } from "../store/detailsSlice"
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
+
+const CustomLabel = ({ children }) => (
+  <label className="text-[13px] font-bold text-gray-900 mb-1 block">
+    {children}
+  </label>
+);
 export default function BankingDetails() {
   const dispatch = useDispatch();
 
@@ -35,6 +41,8 @@ const handleChange = (field, value) => {
   useEffect(() => {
     if (bankSuccess) toast.success(bankSuccess);
   }, [bankSuccess]);
+  const handleBlur = (field, currentValue) => {
+    if (isReadOnly) return;
 
   useEffect(() => {
     if (bankError) toast.error(bankError);
@@ -53,11 +61,6 @@ const handleChange = (field, value) => {
     innerWrapper: "h-full flex items-center py-0"
   };
 
-  const CustomLabel = ({ children }) => (
-    <label className="text-[13px] font-bold text-gray-900 mb-1 block">
-      {children}
-    </label>
-  );
 
   return (
     <div className="flex flex-col gap-3">
