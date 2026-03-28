@@ -13,28 +13,28 @@ import BouncingDots from "@/components/BouncingDots";
 
 export default function OtpVerificationSheet({ onClose }) {
     const [otp, setOtp] = useState("");
-    const dispatch = useDispatch(); 
+    const dispatch = useDispatch();
     const router = useRouter();
-    
-    
+
+
     const { email } = useSelector((state) => state.login);
     const { selectedSSRName } = useSelector((state) => state.dashboard);
     const { loading } = useSelector((state) => state.verify);
 
     const handleVerifyOtp = async () => {
         const ssrName = selectedSSRName;
-        
-        
+
+
         const verifyResult = await dispatch(verifyDetailsOtp({ email, otp }));
-        
+
         if (verifyDetailsOtp.fulfilled.match(verifyResult)) {
-  
+
             const submitResult = await dispatch(submitSSRForVerification(ssrName));
-            
+
             if (submitSSRForVerification.fulfilled.match(submitResult)) {
                 toast.success("Details Verified & Submitted Successfully!");
                 onClose();
-                router.push("/application-submit"); 
+                router.push("/application-submit");
             } else {
                 toast.error(submitResult.payload || "Submission failed. Please try again.");
             }
@@ -59,7 +59,7 @@ export default function OtpVerificationSheet({ onClose }) {
                 value={otp}
                 onChange={setOtp}
                 disabled={loading}
-                containerClassName="flex gap-4 justify-center my-4"
+                containerClassName="flex gap-2 justify-center my-4"
                 render={({ slots }) => (
                     <>
                         {slots.map((slot, idx) => (
@@ -84,12 +84,12 @@ function Slot(props) {
     return (
         <div
             className={`
-                relative w-14 h-14 text-xl font-bold
-                flex items-center justify-center
-                transition-all duration-300
-                border-2 rounded-xl
-                ${props.isActive ? 'border-[#1DA1FA] bg-blue-50' : 'border-gray-200 bg-[#EDEDED]'}
-            `}
+    relative w-12 h-15 text-lg font-bold
+    flex items-center justify-center
+    transition-all duration-300
+    border-2 rounded-xl
+    ${props.isActive ? 'border-[#1DA1FA] bg-blue-50' : 'border-gray-200 bg-[#EDEDED]'}
+`}
         >
             {props.char !== null && <div className="text-gray-900">{props.char}</div>}
             {props.hasFakeCaret && <FakeCaret />}

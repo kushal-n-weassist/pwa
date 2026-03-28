@@ -1,7 +1,7 @@
 import { Input, Select, SelectItem } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateField } from "../store/detailsSlice";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchInsuranceCompanies } from "@/features/details/store/detailsSlice";
 
 export default function PolicyDetails() {
@@ -11,6 +11,15 @@ export default function PolicyDetails() {
   const policyData = useSelector((state) => state.details.policy);
   
   const isReadOnly = docStatus === 1;
+  const [touchedFields, setTouchedFields] = useState({});
+
+  const handleBlur = (field) => {
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const handleFocus = (field) => {
+    setTouchedFields((prev) => ({ ...prev, [field]: false }));
+  };
 
   const companiesArray = useMemo(() => {
     if (!insuranceCompanies || Array.isArray(insuranceCompanies)) {
@@ -56,6 +65,8 @@ export default function PolicyDetails() {
     innerWrapper: "flex items-center justify-between h-full",
     selectorIcon: "text-gray-400 w-4 h-4 static",
   };
+
+  const isEmailInvalid = touchedFields.registeredEmail && policyData.registeredEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(policyData.registeredEmail);
 
   const inputStyles = {
     label: "hidden",
@@ -158,7 +169,11 @@ export default function PolicyDetails() {
             placeholder="example@mail.com"
             variant="bordered"
             classNames={inputStyles}
+            isInvalid={isEmailInvalid}
+            errorMessage={isEmailInvalid ? "Please enter a valid email" : ""}
             value={policyData.registeredEmail || ""}
+            onFocus={() => handleFocus("registeredEmail")}
+            onBlur={() => handleBlur("registeredEmail")}
             onChange={(e) => handleChange("registeredEmail", e.target.value)}
           />
         </div>

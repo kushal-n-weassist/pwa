@@ -1,25 +1,72 @@
 "use client";
 import { Input } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateField } from "../store/detailsSlice";
+import { updateField, fetchPincodeDetails } from "../store/detailsSlice";
+import { useEffect, useRef } from "react";
 
 export default function AddressDetails() {
   const dispatch = useDispatch();
-  
+
   const isSameAsPatient = useSelector((state) => state.details.insured.isSameAsPatient);
   const patientData = useSelector((state) => state.details.patient);
   const addressData = useSelector((state) => state.details.address);
   const docStatus = useSelector((state) => state.details.docStatus);
-  
+
   const isReadOnly = docStatus === 1;
 
 
   const displayData = isSameAsPatient ? patientData : addressData;
 
+  const isFetchingPincode = useSelector((state) => state.details.isFetchingPincode);
+
+
   const handleChange = (field, value) => {
     if (!isSameAsPatient) {
       dispatch(updateField({ section: "address", field, value }));
     }
+  };
+
+  const prevPincodeRef = useRef(null);
+
+  useEffect(() => {
+    const currentPincode = displayData.pincode;
+    console.log(currentPincode)
+    if (
+      currentPincode &&
+      currentPincode.length === 6 &&
+      currentPincode !== prevPincodeRef.current &&
+      !isSameAsPatient &&
+      !isReadOnly
+    ) {
+
+      prevPincodeRef.current = currentPincode;
+      const fetchAndFill = async () => {
+        const result = await dispatch(fetchPincodeDetails(currentPincode));
+        if (fetchPincodeDetails.fulfilled.match(result)) {
+          const areas = result.payload;
+          if (areas.length > 0) {
+            dispatch(updateField({ section: "address", field: "city", value: areas[0].city }));
+            dispatch(updateField({ section: "address", field: "state", value: areas[0].state }));
+            if (areas.length === 1) {
+              dispatch(updateField({ section: "address", field: "area", value: areas[0].area }));
+            }
+          }
+        }
+      };
+      fetchAndFill();
+    } else {
+      prevPincodeRef.current = currentPincode;
+    }
+  }, [displayData.pincode, isSameAsPatient, isReadOnly, dispatch]);
+
+
+  const selectStyles = {
+    label: "hidden",
+    trigger: "heroui-select-custom",
+    value: "heroui-select-value text-[13px]",
+    popoverContent: "bg-white border text-[13px] border-gray-100 shadow-lg rounded-[12px] p-1",
+    innerWrapper: "flex items-center justify-between h-full",
+    selectorIcon: "text-gray-400 w-4 h-4 static",
   };
 
   const inputStyles = {
@@ -73,6 +120,17 @@ export default function AddressDetails() {
             placeholder="XXXX" variant="bordered" classNames={inputStyles}
           />
         </div>
+
+        <div>
+          <CustomLabel>Area / Locality</CustomLabel>
+          <Input
+            isDisabled={isReadOnly || isSameAsPatient}
+            value={displayData.area || ""}
+            onChange={(e) => handleChange("area", e.target.value)}
+            placeholder="Auto filled or enter area" variant="bordered" classNames={inputStyles}
+          />
+        </div>
+
 
         <div>
           <CustomLabel>Address line 1</CustomLabel>

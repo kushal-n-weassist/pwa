@@ -9,10 +9,12 @@ import IdentityContact from "@/features/details/components/IdentityContact";
 import BankingDetails from "@/features/details/components/BankingDetails";
 import PolicyDetails from "@/features/details/components/PolicyDetails";
 import SubmitRequest from "@/features/details/components/SubmitRequest";
+import { useRequireScanner } from "@/hooks/useRequireScanner";
 
 
 export default function FillDetailsPage() {
   const [step, setStep] = useState(1);
+  useRequireScanner();
 
   const handleNext = () => setStep((prev) => Math.min(prev + 1, 7));
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));

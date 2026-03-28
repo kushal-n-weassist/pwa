@@ -29,7 +29,7 @@ export default function SuccessStep() {
             </div>
 
             <Card className="w-full border border-gray-100 shadow-none bg-[#F9FAFB] rounded-[20px] mb-12">
-                <CardBody className="p-6 flex flex-col gap-5">
+                {/* <CardBody className="p-6 flex flex-col gap-5">
                     <div className="flex justify-between items-center">
                         <span className="text-[13px] text-gray-700 font-medium font-bold">Charges for Priority Discharge</span>
                         <span className="text-[13px] text-gray-900 font-bold">-</span>
@@ -42,7 +42,7 @@ export default function SuccessStep() {
                         <span className="text-[13px] text-gray-700 font-medium font-bold">Amount to be blocked</span>
                         <span className="text-[13px] text-[#1DA1FA] font-bold">39.05</span>
                     </div>
-                </CardBody>
+                </CardBody> */}
             </Card>
 
             <Button

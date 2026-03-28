@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import VerticalStep from "@/components/VerticalStep";
 import { useState } from "react";
 import BouncingDots from "@/components/BouncingDots";
+import { useRequireScanner } from "@/hooks/useRequireScanner";
 const steps = [
     {
         number: "Step One",
@@ -36,6 +37,7 @@ const steps = [
 export default function GetStarted() {
     const router = useRouter();
     const [isNavigating, setIsNavigating] = useState(false);
+    useRequireScanner();
 
     const handleBack = () => {
         router.back();
