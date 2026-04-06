@@ -97,53 +97,12 @@ export default function ContactUs() {
           </>
         )}
 
-        <div className="flex gap-6 mt-2">
-          <Input
-            label="Name"
-            variant="underlined"
-            placeholder=" "
-            labelPlacement="outside"
-            classNames={{
-              label: "font-bold text-gray-900 text-sm",
-              input: "text-sm",
-            }}
-            className="flex-1"
-          />
-          <Input
-            label="Email"
-            variant="underlined"
-            placeholder=" "
-            labelPlacement="outside"
-            classNames={{
-              label: "font-bold text-gray-900 text-sm",
-              input: "text-sm",
-            }}
-            className="flex-1"
-          />
-        </div>
 
-        <div className="space-y-3 mt-2">
-          <label className="text-sm font-bold text-gray-900">Message</label>
-          <Textarea
-            variant="flat"
-            disableAnimation
-            disableAutosize
-            classNames={{
-              inputWrapper: "bg-[#F1F1F1] rounded-2xl p-4 min-h-[160px] shadow-none",
-              input: "text-sm",
-            }}
-          />
-        </div>
+
+       
       </div>
 
-      {/* Submit Button */}
-      <div className="mt-auto p-6 bg-white">
-        <Button 
-          className="w-full bg-[#1DA1FA] text-white font-bold h-14 rounded-2xl text-lg active:scale-[0.98] transition-transform"
-        >
-          Submit Query
-        </Button>
-      </div>
+
     </div>
   );
 }

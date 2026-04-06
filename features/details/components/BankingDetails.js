@@ -1,9 +1,15 @@
 import { Input } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateField, validateBank } from "../store/detailsSlice";
+import { updateField, validateBank,clearBankError } from "../store/detailsSlice";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
+
+const CustomLabel = ({ children }) => (
+  <label className="text-[13px] font-bold text-gray-900 mb-1 block">
+    {children}
+  </label>
+);
 export default function BankingDetails() {
   const dispatch = useDispatch();
 
@@ -12,33 +18,36 @@ export default function BankingDetails() {
     isValidatingBank,
     bankError,
     docStatus,
-    bankSuccess, 
+    bankSuccess,
 
   } = useSelector((state) => state.details);
 
   const isReadOnly = docStatus === 1;
 
-  const handleChange = (field, value) => {
-    const formattedValue = field === "ifscCode" ? value.toUpperCase() : value;
-    dispatch(updateField({ section: "banking", field, value: formattedValue }));
-  };
+const handleChange = (field, value) => {
+  const formattedValue = field === "ifscCode" ? value.toUpperCase() : value;
+  dispatch(updateField({ section: "banking", field, value: formattedValue }));
+
+  if (field === "ifscCode") {
+    dispatch(updateField({ section: "banking", field: "bankName", value: "" }));
+    dispatch(clearBankError()); 
+  }
+};
+
+ 
+  useEffect(() => {
+    if (bankSuccess) toast.success(bankSuccess);
+  }, [bankSuccess]);
+  const handleBlur = (field, currentValue) => {
+    if (isReadOnly) return;
 
   useEffect(() => {
-  if (bankSuccess) toast.success(bankSuccess);
-}, [bankSuccess]);
-
-useEffect(() => {
-  if (bankError) toast.error(bankError);
-}, [bankError]);
+    if (bankError) toast.error(bankError);
+  }, [bankError]);
 
   const handleBlur = (field, currentValue) => {
-    // if (isReadOnly) return;
-
-    const ifsc = field === "ifscCode" ? currentValue : bankingData.ifscCode;
-    const bankName = field === "bankName" ? currentValue : bankingData.bankName;
-
-    if (ifsc?.length === 11 && bankName?.length > 2) {
-      dispatch(validateBank({ ifsc, bank_name: bankName }));
+    if (field === "ifscCode" && currentValue?.length === 11) {
+      dispatch(validateBank({ ifsc: currentValue }));
     }
   };
 
@@ -49,11 +58,6 @@ useEffect(() => {
     innerWrapper: "h-full flex items-center py-0"
   };
 
-  const CustomLabel = ({ children }) => (
-    <label className="text-[13px] font-bold text-gray-900 mb-1 block">
-      {children}
-    </label>
-  );
 
   return (
     <div className="flex flex-col gap-3">
@@ -84,19 +88,20 @@ useEffect(() => {
         <div>
           <CustomLabel>Bank Name</CustomLabel>
           <Input
-            isDisabled={isReadOnly} //
+            isDisabled
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}
             value={bankingData.bankName || ""}
             onChange={(e) => handleChange("bankName", e.target.value)}
-            onBlur={(e) => handleBlur("bankName", e.target.value)} />
+          />
         </div>
 
         <div>
           <CustomLabel>Branch Name</CustomLabel>
           <Input
-            isDisabled={isReadOnly} //
+
+            isDisabled={true}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}

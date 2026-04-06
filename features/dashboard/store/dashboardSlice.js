@@ -38,13 +38,13 @@ export const fetchHospitals = createAsyncThunk(
           "Content-Type": "application/json",
           Authorization: token ? `Basic ${token}` : "",
         },
-        body:JSON.stringify({})
+        body: JSON.stringify({})
       });
 
       const data = await res.json();
       if (!data.message?.success) return rejectWithValue(data.message?.message || "Error");
-      
-      return data.message.data; 
+
+      return data.message.data;
     } catch (err) {
       return rejectWithValue("Failed to load hospitals");
     }
@@ -58,10 +58,17 @@ const dashboardSlice = createSlice({
     ssrList: [],
     loading: false,
     error: null,
-    hospitals: [], 
+    hospitals: [],
     selectedHospitalName: null,
+    selectedSSRName: null,
   },
-  reducers: {},
+  reducers: {
+    setSelectedSSR: (state, action) => {
+      state.selectedSSRName = action.payload;
+    },
+
+    
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchSSR.pending, (state) => {
@@ -79,4 +86,5 @@ const dashboardSlice = createSlice({
   },
 });
 
+export const { setAllDetails, setSelectedSSR } = dashboardSlice.actions;
 export default dashboardSlice.reducer;

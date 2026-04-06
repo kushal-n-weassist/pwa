@@ -11,23 +11,23 @@ export default function VerticalSummary({ data, onEdit }) {
   }
 
   const sections = [
-    { 
+    {
       key: "patient",
-      title: "Patient Details", 
+      title: "Patient Details",
       data: data.patient || {},
       step: 1,
     },
-    { 
+    {
       key: "insured",
-      title: "Insured Details", 
-      data: data.insured?.isSameAsPatient 
-        ? { Status: "Same as Patient" } 
-        : (data.insured || {}),
+      title: "Insured Details",
+      data: data.insured?.isSameAsPatient
+        ? { Status: "Same as Patient" }
+        : data.insured || {},
       step: 2,
     },
-    { 
+    {
       key: "policy",
-      title: "Policy Details", 
+      title: "Policy Details",
       data: data.policy || {},
       step: 6,
     },
@@ -39,14 +39,15 @@ export default function VerticalSummary({ data, onEdit }) {
 
       <div className="space-y-0">
         {sections.map((section, idx) => {
-          const hasData = Object.keys(section.data).filter(
-            key => key !== "isSameAsPatient" && section.data[key]
-          ).length > 0;
+          const hasData =
+            Object.keys(section.data).filter(
+              (key) => key !== "isSameAsPatient" && section.data[key],
+            ).length > 0;
 
           return (
-            <Accordion 
+            <Accordion
               key={section.key}
-              variant="light"
+              variant="splitted"
               defaultExpandedKeys={idx === 0 ? [section.key] : []}
               className="px-0"
             >
@@ -58,32 +59,36 @@ export default function VerticalSummary({ data, onEdit }) {
                   trigger: "py-4 px-0",
                   title: "text-base font-bold",
                   content: "pb-6 pt-2 px-0",
-                  indicator: "text-gray-400"
+                  indicator: "text-black",
                 }}
                 title={
                   <div className="flex items-center">
                     <div className="absolute left-0 top-4 w-6 h-6 rounded-full bg-[#1DA1FA] z-10 flex items-center justify-center">
                       <div className="w-2 h-2 bg-white rounded-full" />
                     </div>
-                    
-                    <span className="text-gray-900 font-bold">{section.title}</span>
+
+                    <span className="text-gray-900 font-bold">
+                      {section.title}
+                    </span>
                   </div>
                 }
               >
                 {hasData ? (
                   <div className="space-y-2">
-                    {Object.entries(section.data).map(([key, value]) => (
-                      value && key !== "isSameAsPatient" && (
-                        <div key={key} className="flex flex-col gap-1 pb-2">
-                          <span className="text-[11px] text-gray-500 font-semibold">
-                            {key.replace(/([A-Z])/g, ' $1').trim()}
-                          </span>
-                          <span className="text-[14px] text-gray-900 font-normal">
-                            {value}
-                          </span>
-                        </div>
-                      )
-                    ))}
+                    {Object.entries(section.data).map(
+                      ([key, value]) =>
+                        value &&
+                        key !== "isSameAsPatient" && (
+                          <div key={key} className="flex flex-col gap-1 pb-2">
+                            <span className="text-[11px] text-gray-500 font-semibold">
+                              {key.replace(/([A-Z])/g, " $1").trim()}
+                            </span>
+                            <span className="text-[14px] text-gray-900 font-normal">
+                              {value}
+                            </span>
+                          </div>
+                        ),
+                    )}
                   </div>
                 ) : (
                   <div className="text-sm text-gray-400 italic">

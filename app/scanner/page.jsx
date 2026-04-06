@@ -9,6 +9,7 @@ import jsQR from "jsqr";
 import dynamic from 'next/dynamic';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
+import { resetAllDetails } from '@/features/details/store/detailsSlice';
 
 const Scanner = dynamic(
     () => import('@yudiel/react-qr-scanner').then(m => m.Scanner),
@@ -32,14 +33,18 @@ export default function ScannerPage() {
     const router = useRouter();
     const dispatch = useDispatch();
 
-    // Keep ref in sync with latest permittedHospitals
     useEffect(() => {
         permittedHospitalsRef.current = permittedHospitals;
     }, [permittedHospitals]);
 
+    useEffect(() => {
+        dispatch(resetAllDetails());
+    }, [])
+
     const setScannedDataSync = (data) => {
         scannedDataRef.current = data;
         setScannedData(data);
+        console.log("the scanner data", scannedData);
     };
 
     const setIsProcessingSync = (val) => {
@@ -68,43 +73,78 @@ export default function ScannerPage() {
         dispatch(fetchHospitals());
     }, [dispatch]);
 
-    const processResult = useCallback((rawValue) => {
+    const processResult = useCallback(async (rawValue) => {
         if (!rawValue) return;
+
+        const cleaned = rawValue.trim().replace(/'/g, '"');
+        console.log("the cleaned", cleaned);
 
         try {
             let hospitalId, type, city;
 
-            if (rawValue.startsWith('{')) {
-                const parsed = JSON.parse(rawValue);
+            try {
+                const parsed = JSON.parse(cleaned);
                 hospitalId = parsed.hospital;
                 type = parsed.type || parsed.claim_type;
                 city = parsed.city;
-            } else {
-                hospitalId = rawValue;
+                console.log("parsed QR:", parsed, hospitalId, type, city);
+            } catch {
+                console.log("JSON parse failed — treating as plain hospital ID");
+                hospitalId = cleaned;
             }
 
-            const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
-            console.log("the match", match);
+            // All 3 fields are required — any missing = invalid hospital QR
+            if (!hospitalId || !type || !city) {
+                toast.error("Invalid QR code. Please scan a hospital QR code.", {
+                    duration: 4000,
+                    style: { borderRadius: '20px', background: '#fff', color: '#333', fontSize: '14px', fontWeight: 'bold' },
+                });
+                setIsProcessingSync(false);
+                return;
+            }
 
-            setScannedDataSync({
-                hospitalId: hospitalId,
-                hospitalName: match ? match.title : "Unknown Hospital",
-                claim_type: type || "Pre-Auth",
-                city: city || "N/A"
-            });
+            // Fetch hospital directly via API instead of cached Redux list
+            try {
+                const token = typeof window !== 'undefined' ? localStorage.getItem("userToken") : "";
+                const res = await fetch("/api/method/weassist.api.pfa_dashboard.fetch_permitted_hospital", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: token ? `Basic ${token}` : "",
+                    },
+                    body: JSON.stringify({ name: hospitalId })
+                });
+                
+                const data = await res.json();
+                const freshHospital = data?.message?.data?.[0]; // backend usually returns list or exact match
+                
+                // If it isn't returned, fallback to Redux or Unknown
+                const matchName = freshHospital?.title || 
+                                permittedHospitalsRef.current.find(h => h.name === hospitalId)?.title || 
+                                "Unknown Hospital";
+
+                setScannedDataSync({
+                    hospitalId,
+                    hospitalName: matchName,
+                    claim_type: type,
+                    city,
+                });
+            } catch (apiErr) {
+                 // Fallback on network err
+                 const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
+                 setScannedDataSync({
+                     hospitalId,
+                     hospitalName: match ? match.title : "Unknown Hospital",
+                     claim_type: type,
+                     city,
+                 });
+            }
 
             setIsProcessingSync(false);
         } catch (err) {
-            toast.error("Invalid QR: Could not process details.", {
+            toast.error("Could not read QR code. Please try again.", {
                 duration: 4000,
-                style: {
-                    borderRadius: '20px',
-                    background: '#fff',
-                    color: '#333',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                },
+                style: { borderRadius: '20px', background: '#fff', color: '#333', fontSize: '14px', fontWeight: 'bold' },
             });
             setIsProcessingSync(false);
         }
@@ -118,11 +158,14 @@ export default function ScannerPage() {
     const handleScan = useCallback((result) => {
         if (!result || isProcessingRef.current || scannedDataRef.current) return;
         const rawValue = result[0]?.rawValue || result;
+        console.log("raw value ", rawValue);
+        console.log("the result ", result);
         processResult(rawValue);
     }, [processResult]);
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
+        console.log("the file", file);
         if (!file) return;
 
         e.target.value = '';
@@ -141,6 +184,7 @@ export default function ScannerPage() {
 
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
+                console.log("the code ", code);
 
                 if (code) {
                     processResult(code.data);
@@ -239,7 +283,7 @@ export default function ScannerPage() {
 
             <div className="absolute top-0 left-0 right-0 z-[120] flex justify-between items-center px-6 pt-12 pb-4">
                 <h2 className="text-white font-bold text-xl tracking-tight">Scanner</h2>
-                <button onClick={() => router.back()} className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-all">
+                <button onClick={() => router.replace('/dashboard')} className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-all">
                     <LucideX size={22} />
                 </button>
             </div>
@@ -282,16 +326,18 @@ export default function ScannerPage() {
 
                         <div className="space-y-4 mb-8">
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Hospital</span>
-                                <span className="text-gray-900 font-black">{scannedData.hospitalName}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Hospital</span>
+                                <span className="text-gray-900 font-black text-right">{scannedData.hospitalName}</span>
                             </div>
+
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Claim Type</span>
-                                <span className="text-[#1DA1FA] font-black uppercase">{scannedData.claim_type}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Claim Type</span>
+                                <span className="text-[#1DA1FA] font-black uppercase text-right">{scannedData.claim_type}</span>
                             </div>
+
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Location</span>
-                                <span className="text-gray-900 font-black">{scannedData.city}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Location</span>
+                                <span className="text-gray-900 font-black text-right">{scannedData.city}</span>
                             </div>
                         </div>
 

@@ -10,11 +10,6 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 
 export default function Dashboard() {
-  const state = useSelector((state)=>state);
-
-  console.log("the state ",state);
-
-  
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -23,18 +18,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#018FDE] to-[#008FDF] flex flex-col font-sans">
-      <div className="px-6 pt-12 pb-8">
+      <div className="px-6 pt-8  pb-8">
         <TopHeader />
         <div className="mt-6">
-          <CustomStepper />
+          {/* <CustomStepper /> */}
         </div>
       </div>
 
-      <div className="flex-grow bg-white rounded-t-[40px] px-6 pt-8 pb-24">
+      <div className="flex-grow bg-white rounded-t-[40px] px-6 pt-8  pb-24">
         <QuickAccess />
         <SSRSection />
       </div>
-
       <BottomNav />
     </div>
   );

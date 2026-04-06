@@ -2,6 +2,12 @@ import "./globals.css";
 import { Roboto } from "next/font/google";
 import Providers from "./Provider";
 import InstallPrompt from "@/components/InstallPrompt";
+import NetworkStatus from "@/components/NetworkStatus";
+import SplashScreen from "@/components/SplashScreen";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import AuthGuard from "@/components/AuthGuard";
+
+
 
 const roboto = Roboto({
   weight: ['300', '400', '700'],
@@ -11,6 +17,7 @@ const roboto = Roboto({
 
 export const metadata = {
   applicationName: 'Fusion',
+  manifest: '/manifest.webmanifest', 
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -18,15 +25,29 @@ export const metadata = {
   },
 }
 
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${roboto.variable} font-roboto font-light antialiased`}>
         <Providers>
-          <main className="light text-foreground bg-background">
-            {children}
-          </main>
-          <InstallPrompt />  
+          <SplashScreen />
+          <NetworkStatus />
+          <AuthGuard>  
+            <main className="light text-foreground bg-background">
+              <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "placeholder"}>
+                {children}
+              </GoogleOAuthProvider>
+            </main>
+          </AuthGuard>  
+          <InstallPrompt />
         </Providers>
       </body>
     </html>

@@ -5,20 +5,23 @@ import { Button, InputOtp } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setField, verifyEmailOtp } from "@/features/auth/signup/store/signupSlice";
+import { useDeviceId } from "@/hooks/useDeviceId";
 
 
 export default function VerifyOtpPage() {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { deviceId } = useDeviceId();
 
   const { email, otp, loading } = useSelector((state) => state.signup);
 
 
   const handleVerify = async () => {
 
-    if (otp.length !== 4) return;
+    if (otp.length !== 6) return;
 
-    const result = await dispatch(verifyEmailOtp({ email, otp }));
+    const result = await dispatch(verifyEmailOtp({ email, otp, deviceId }));
+    console.log("the otp result", result);
     
     if (verifyEmailOtp.fulfilled.match(result)) {
       router.push("/dashboard");
@@ -39,7 +42,7 @@ export default function VerifyOtpPage() {
 
         <div className="flex justify-center w-full py-4">
           <InputOtp
-            length={4}
+            length={6}
             value={otp}
             onValueChange={(value) => dispatch(setField({ field: "otp", value }))}
             variant="flat"

@@ -8,23 +8,32 @@ import detailsReducer from "@/features/details/store/detailsSlice";
 import dashboardReducer from "@/features/dashboard/store/dashboardSlice";
 import uploadReducer from "@/features/upload/store/uploadSlice";
 import legalReducer from "@/features/profile/store/legalSlice";
+import verifyReducer from "@/features/verifydetails/store/verifySlice";
+import ticketReducer from "@/features/issue-raise/storage/issueraiseSlice";
+import { digioApi } from "./digioApi";
 
-
+const dashboardPersistConfig = {
+  key: "dashboard",
+  storage,
+  blacklist: ["selectedSSRName"], 
+};
 
 const rootReducer = combineReducers({
   login: loginReducer,
   signup: signupReducer,
   details: detailsReducer,
-  dashboard: dashboardReducer,
+  dashboard: persistReducer(dashboardPersistConfig, dashboardReducer), 
   upload: uploadReducer,
   legal: legalReducer,
-
+  verify: verifyReducer,
+  ticket:ticketReducer,
+  [digioApi.reducerPath]: digioApi.reducer,
 });
 
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["dashboard"], 
+  whitelist: ["dashboard"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -34,7 +43,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(digioApi.middleware),
 });
 
 export const persistor = persistStore(store);

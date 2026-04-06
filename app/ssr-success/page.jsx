@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { resetSuccessState } from "@/features/details/store/detailsSlice";
 import { Button, Card, CardBody } from "@heroui/react";
 import { ChevronLeft } from "lucide-react";
@@ -9,6 +9,8 @@ import { ChevronLeft } from "lucide-react";
 export default function SuccessPage() {
   const { submissionSuccess, lastCreatedSsr } = useSelector((state) => state.details || {});
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isUpdate = searchParams.get("mode") === "update";
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -56,10 +58,10 @@ export default function SuccessPage() {
             {/* Text */}
             <div className="flex flex-col gap-1 z-10">
               <h2 className="text-[17px] font-bold text-gray-900 leading-tight">
-                Self Service Created Successfully
+                {isUpdate ? "Request Updated Successfully" : "Self Service Created Successfully"}
               </h2>
               <p className="text-[13px] text-gray-500 font-medium">
-                Application Number-{lastCreatedSsr || ""}
+                Application Number — {lastCreatedSsr || "N/A"}
               </p>
             </div>
           </div>

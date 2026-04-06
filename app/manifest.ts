@@ -1,36 +1,34 @@
-export default function manifest() {
+import type { MetadataRoute } from 'next'
+
+export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Fusion',
     short_name: 'Fusion',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#000000',
-
+    theme_color: '#1DA1FA',
     icons: [
       {
-        src: '/icons/pwa-192x192.png',
-        sizes: '192x192',
+        src: '/Logo-only.png',
+        sizes: 'any',
         type: 'image/png',
-      },
-      {
-        src: '/icons/Icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
+        purpose: 'maskable',
       },
     ],
-
     screenshots: [
       {
-        src: '/icons/screenshot2.png',
+        src: '/icons/appscreenshot1.png',
         sizes: '375x667',
         type: 'image/png',
+        // @ts-ignore
         form_factor: 'narrow',
       },
       {
-        src: '/icons/screenshot3.png',
+        src: '/icons/appscreenshot2.png',
         sizes: '1280x720',
         type: 'image/png',
+        // @ts-ignore
         form_factor: 'wide',
       },
     ],
