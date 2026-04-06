@@ -5,11 +5,13 @@ import { Button, InputOtp } from "@heroui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { setField, verifyEmailOtp } from "@/features/auth/signup/store/signupSlice";
+import { useDeviceId } from "@/hooks/useDeviceId";
 
 
 export default function VerifyOtpPage() {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { deviceId } = useDeviceId();
 
   const { email, otp, loading } = useSelector((state) => state.signup);
 
@@ -18,8 +20,8 @@ export default function VerifyOtpPage() {
 
     if (otp.length !== 6) return;
 
-    const result = await dispatch(verifyEmailOtp({ email, otp }));
-    console.log("the otp result",result);
+    const result = await dispatch(verifyEmailOtp({ email, otp, deviceId }));
+    console.log("the otp result", result);
     
     if (verifyEmailOtp.fulfilled.match(result)) {
       router.push("/dashboard");

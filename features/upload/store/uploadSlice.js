@@ -1,6 +1,7 @@
 // features/upload/store/uploadSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getFile, clearFiles } from "./fileStore";
+import { getFile, getFilesByPrefix, clearFiles } from "./fileStore";
+
 
 const toBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -10,10 +11,8 @@ const toBase64 = (file) =>
     reader.onerror = reject;
   });
 
-// Combine front + back into a single PDF blob using canvas
 const combineImagesToPDFBase64 = async (frontFile, backFile) => {
   const { PDFDocument } = await import("pdf-lib");
-
   const pdfDoc = await PDFDocument.create();
 
   const addImagePage = async (file) => {
@@ -38,42 +37,57 @@ const combineImagesToPDFBase64 = async (frontFile, backFile) => {
   return base64;
 };
 
+const uploadDoc = async (ssrName, token, documentName, file) => {
+  const content = await toBase64(file);
+  const file_type = file.type === "application/pdf" ? "pdf" : "jpg";
+  const res = await fetch("/api/method/weassist.api.ssr.upload_ssr_docs", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token ? `Basic ${token}` : "",
+    },
+    body: JSON.stringify({
+      name: ssrName,
+      docs: [{ document: documentName, file_type, content }],
+    }),
+  });
+  return res.json();
+};
+
 export const uploadSSRDocs = createAsyncThunk(
   "upload/uploadSSRDocs",
   async (ssrName, { rejectWithValue, getState }) => {
     try {
       const token = getState().login?.userToken;
 
-      const patientFront = getFile("patientFront");
-      const patientBack = getFile("patientBack");
-      const insuredFront = getFile("insuredFront");
-      const insuredBack = getFile("insuredBack");
-      const insuredPAN = getFile("insuredPAN");
+      const patientFront      = getFile("patientFront");
+      const patientBack       = getFile("patientBack");
+      const proposerFront     = getFile("proposerFront");
+      const proposerBack      = getFile("proposerBack");
+      const proposerPAN       = getFile("proposerPAN");
+      const patientInsurance  = getFile("patientInsurance");
+      const proposerPolicy    = getFile("proposerPolicy");
+      const consultationDocs  = getFilesByPrefix("consultationDoc_");
 
       console.log("uploadSSRDocs called with SSR:", ssrName);
       console.log("files found:", {
         patientFront: !!patientFront,
         patientBack: !!patientBack,
-        insuredFront: !!insuredFront,
-        insuredBack: !!insuredBack,
-        insuredPAN: !!insuredPAN,
+        proposerFront: !!proposerFront,
+        proposerBack: !!proposerBack,
+        proposerPAN: !!proposerPAN,
+        patientInsurance: !!patientInsurance,
+        proposerPolicy: !!proposerPolicy,
+        consultationDocs: consultationDocs.length,
       });
 
       const allPromises = [];
 
-      // ── Patient Aadhaar ──────────────────────────────────────────
-      // Same as RN: if front+back both images → combine into PDF
-      // If only front → upload as is
       if (patientFront) {
         let content;
         let file_type;
 
-        if (
-          patientBack &&
-          patientFront.type === "image/jpeg" &&
-          patientBack.type === "image/jpeg"
-        ) {
-          // Both sides — combine into single PDF (same as RN createPdf)
+        if (patientBack && patientFront.type === "image/jpeg" && patientBack.type === "image/jpeg") {
           content = await combineImagesToPDFBase64(patientFront, patientBack);
           file_type = "pdf";
         } else if (patientFront.type === "application/pdf") {
@@ -93,99 +107,57 @@ export const uploadSSRDocs = createAsyncThunk(
             },
             body: JSON.stringify({
               name: ssrName,
-              docs: [
-                {
-                  document: "Id Card - Patient (O-1)*",
-                  file_type,
-                  content,
-                },
-              ],
+              docs: [{ document: "Id Card - Patient (O-1)*", file_type, content }],
             }),
           })
             .then((r) => r.json())
-            .then((res) => {
-              console.log("Patient Aadhaar upload result:", res);
-              return res;
-            })
+            .then((res) => { console.log("Patient Aadhaar upload result:", res); return res; })
         );
       }
 
-      // ── Insured Aadhaar ──────────────────────────────────────────
-      if (insuredFront) {
-        let content;
-        let file_type;
-
-        if (
-          insuredBack &&
-          insuredFront.type === "image/jpeg" &&
-          insuredBack.type === "image/jpeg"
-        ) {
-          content = await combineImagesToPDFBase64(insuredFront, insuredBack);
-          file_type = "pdf";
-        } else if (insuredFront.type === "application/pdf") {
-          content = await toBase64(insuredFront);
-          file_type = "pdf";
-        } else {
-          content = await toBase64(insuredFront);
-          file_type = "jpg";
-        }
-
+      // Aadhar (Insured) - Front (O-1)* and Back (O-1)* are separate docs
+      if (proposerFront) {
         allPromises.push(
-          fetch("/api/method/weassist.api.ssr.upload_ssr_docs", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token ? `Basic ${token}` : "",
-            },
-            body: JSON.stringify({
-              name: ssrName,
-              docs: [
-                {
-                  document: "Aadhar - Pri. Insured (O-1)*",
-                  file_type,
-                  content,
-                },
-              ],
-            }),
-          })
-            .then((r) => r.json())
-            .then((res) => {
-              console.log("Insured Aadhaar upload result:", res);
-              return res;
-            })
+          uploadDoc(ssrName, token, "Aadhar (Insured) - Front (O-1)*", proposerFront)
+            .then((res) => { console.log("Proposer Aadhaar Front upload result:", res); return res; })
         );
       }
-
-      // ── Insured PAN ──────────────────────────────────────────────
-      if (insuredPAN) {
-        const content = await toBase64(insuredPAN);
-        const file_type = insuredPAN.type === "application/pdf" ? "pdf" : "jpg";
-
+      if (proposerBack) {
         allPromises.push(
-          fetch("/api/method/weassist.api.ssr.upload_ssr_docs", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token ? `Basic ${token}` : "",
-            },
-            body: JSON.stringify({
-              name: ssrName,
-              docs: [
-                {
-                  document: "PAN Card - Pri. Insured (O-1)*",
-                  file_type,
-                  content,
-                },
-              ],
-            }),
-          })
-            .then((r) => r.json())
-            .then((res) => {
-              console.log("Insured PAN upload result:", res);
-              return res;
-            })
+          uploadDoc(ssrName, token, "Aadhar (Insured) - Back (O-1)*", proposerBack)
+            .then((res) => { console.log("Proposer Aadhaar Back upload result:", res); return res; })
         );
       }
+
+      if (proposerPAN) {
+        allPromises.push(
+          uploadDoc(ssrName, token, "PAN Card - Pri. Insured (O-1)*", proposerPAN)
+            .then((res) => { console.log("Proposer PAN upload result:", res); return res; })
+        );
+      }
+
+      if (patientInsurance) {
+        allPromises.push(
+          uploadDoc(ssrName, token, "e-Card - Family (O-1)*", patientInsurance)
+            .then((res) => { console.log("e-Card Family upload result:", res); return res; })
+        );
+      }
+
+      if (proposerPolicy) {
+        allPromises.push(
+          uploadDoc(ssrName, token, "Employee ID (O-1)*", proposerPolicy)
+            .then((res) => { console.log("Employee ID upload result:", res); return res; })
+        );
+      }
+
+      for (const doc of consultationDocs) {
+        allPromises.push(
+          uploadDoc(ssrName, token, "Documents Sent to Ins Comp (O-N)*", doc)
+            .then((res) => { console.log("Consultation paper upload result:", res); return res; })
+        );
+      }
+
+
 
       if (allPromises.length === 0) {
         console.log("No files found in fileStore — nothing to upload");
@@ -207,9 +179,11 @@ const uploadSlice = createSlice({
   initialState: {
     patientFront: null,
     patientBack: null,
-    insuredFront: null,
-    insuredBack: null,
-    insuredPAN: null,
+    proposerFront: null,
+    proposerBack: null,
+    proposerPAN: null,
+    patientInsurance: null,
+    proposerPolicy: null,
     isUploading: false,
     uploadError: null,
     uploadSuccess: false,
@@ -224,9 +198,11 @@ const uploadSlice = createSlice({
     resetUpload: () => ({
       patientFront: null,
       patientBack: null,
-      insuredFront: null,
-      insuredBack: null,
-      insuredPAN: null,
+      proposerFront: null,
+      proposerBack: null,
+      proposerPAN: null,
+      patientInsurance: null,
+      proposerPolicy: null,
       isUploading: false,
       uploadError: null,
       uploadSuccess: false,

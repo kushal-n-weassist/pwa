@@ -9,24 +9,42 @@ export const createUser = createAsyncThunk(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ first_name, email, mobile_no }),
       });
-      if (!res.ok) throw await res.json();
-      const response = await res.json();
-      console.log("SIGN-UP response -----------------> ", response);
-      return response;
+
+      const data = await res.json();
+      console.log("SIGN-UP response ----------------->", data);
+
+      if (data._server_messages) {
+        try {
+          const msgs = JSON.parse(data._server_messages);
+          const first = JSON.parse(msgs[msgs.length - 1]);
+          return rejectWithValue(first.message || "Sign up failed");
+        } catch {
+        }
+      }
+
+      if (data.exc_type || data.exc) {
+        return rejectWithValue(
+          data._error_message || data.exc_type || "Sign up failed"
+        );
+      }
+
+      if (!res.ok) return rejectWithValue("Sign up failed");
+
+      return data;
     } catch (err) {
-      return rejectWithValue(err);
+      return rejectWithValue("Network error. Please try again.");
     }
   },
 );
 
 export const sendEmailOtp = createAsyncThunk(
   "signup/sendEmailOtp",
-  async ({ email }, { rejectWithValue }) => {
+  async ({ email, deviceId }, { rejectWithValue }) => {
     try {
       const res = await fetch("/api/method/weassist.api.auth.generate_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, device_id: "web" }),
+        body: JSON.stringify({ user_id: email, device_id: deviceId }),
       });
       if (!res.ok) throw await res.json();
       return await res.json();
@@ -38,12 +56,12 @@ export const sendEmailOtp = createAsyncThunk(
 
 export const verifyEmailOtp = createAsyncThunk(
   "signup/verifyEmailOtp",
-  async ({ email, otp }, { rejectWithValue }) => {
+  async ({ email, otp, deviceId }, { rejectWithValue }) => {
     try {
       const res = await fetch("/api/method/weassist.api.auth.verify_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, otp: otp }),
+        body: JSON.stringify({ user_id: email, otp, device_id: deviceId }),
       });
       if (!res.ok) throw await res.json();
       return await res.json();
@@ -90,7 +108,11 @@ const signupSlice = createSlice({
         state.loading = true;
       })
       .addCase(verifyEmailOtp.fulfilled, (state, action) => {
-        const { token, email, full_name } = action.payload.message;
+        const msg = action.payload?.message;
+        const token = msg?.token;
+        const email = msg?.email;
+        const full_name = msg?.full_name || msg?.first_name || state.first_name || "";
+        const gender = msg?.gender || "";
 
         state.loading = false;
         state.isAuthenticated = true;
@@ -103,6 +125,7 @@ const signupSlice = createSlice({
           localStorage.setItem("userToken", token);
           localStorage.setItem("username", full_name);
           localStorage.setItem("email", email);
+          if (gender) localStorage.setItem("gender", gender);
 
           document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
         }

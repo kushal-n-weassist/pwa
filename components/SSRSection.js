@@ -2,11 +2,9 @@
 
 import ssr from "@/public/ssr.png";
 import Image from "next/image";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
-import { fetchSingleSSR } from "@/features/details/store/detailsSlice";
-import { useDispatch } from "react-redux";
-import { setAllDetails } from "@/features/details/store/detailsSlice";
+import { fetchSingleSSR, setAllDetails } from "@/features/details/store/detailsSlice";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { setSelectedSSR } from "@/features/dashboard/store/dashboardSlice";
@@ -14,30 +12,19 @@ import { Modal, ModalContent, ModalBody, Button, useDisclosure } from "@heroui/r
 import { LayoutGrid, ClipboardEdit } from "lucide-react";
 import { useState } from "react";
 
-
 export default function SSRSection() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [tempSelectedSSR, setTempSelectedSSR] = useState(null);
   const dispatch = useDispatch();
   const router = useRouter();
   const { ssrList, loading } = useSelector((state) => state.dashboard);
-  const state = useSelector((state) => state);
-  console.log("the state ", state)
 
   if (loading)
     return <p className="text-center text-gray-400 mt-6">Loading SSR...</p>;
 
-  const handleItemClick = async (ssrName) => {
+  const handleItemClick = (ssrName) => {
     setTempSelectedSSR(ssrName);
     onOpen();
-    // const result = await dispatch(fetchSingleSSR(ssrName));
-    // if (fetchSingleSSR.fulfilled.match(result)) {
-    //   dispatch(setAllDetails(result.payload));
-    //   dispatch(setSelectedSSR(ssrName)); // 
-    //   // router.push("/details");
-    // } else {
-    //   toast.error("Could not load request details");
-    // }
   };
 
   const handleAction = async (action) => {
@@ -59,7 +46,6 @@ export default function SSRSection() {
     }
   };
 
-
   const latestSSRs = [...ssrList]
     .sort((a, b) => new Date(b.creation) - new Date(a.creation))
     .slice(0, 5);
@@ -73,19 +59,30 @@ export default function SSRSection() {
 
       <div className="grid grid-cols-4 gap-4">
         {latestSSRs.map((item) => (
-          <div key={item.name} className="flex flex-col items-center gap-2" onClick={() => handleItemClick(item.name)}>
+          <div 
+            key={item.name} 
+            className="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform" 
+            onClick={() => handleItemClick(item.name)}
+          >
             <div className="w-20 h-20 rounded-full bg-white shadow-xl flex items-center p-1 justify-center border-6 border-gray-100">
               <Image src={ssr} alt="ssr" width={100} height={100} />
             </div>
 
-            <p className="text-[9px] text-gray-500 font-bold text-center">
-              {item.patient_first_name}
-              <br />
-              {item.city_name}
-            </p>
+            <div className="text-center">
+              {/* Added SSR ID here */}
+              <p className="text-[10px] text-[#1DA1FA] font-extrabold truncate w-20">
+                {item.name}
+              </p>
+              <p className="text-[9px] text-gray-500 font-bold leading-tight">
+                {item.patient_first_name}
+                <br />
+                <span className="text-gray-400 font-medium">{item.city_name}</span>
+              </p>
+            </div>
           </div>
         ))}
       </div>
+
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}

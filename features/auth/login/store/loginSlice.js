@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { DEVICE_ID } from '@/features/utils/constants';
+import { verifyEmailOtp } from '@/features/auth/signup/store/signupSlice';
 
 const getStoredAuth = () => {
   if (typeof window !== "undefined") {
@@ -18,12 +19,12 @@ const initialAuth = getStoredAuth();
 
 export const generateLoginOtp = createAsyncThunk(
   "login/generateOtp",
-  async ({ email }, { rejectWithValue }) => {
+  async ({ email, deviceId }, { rejectWithValue }) => {
     try {
       const res = await fetch("/api/method/weassist.api.auth.generate_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, device_id: DEVICE_ID }),
+        body: JSON.stringify({ user_id: email, device_id: deviceId }),
       });
       const data = await res.json();
       if (data.message?.success === false) return rejectWithValue(data.message.message);
@@ -36,12 +37,12 @@ export const generateLoginOtp = createAsyncThunk(
 
 export const verifyLoginOtp = createAsyncThunk(
   "login/verifyOtp",
-  async ({ email, otp }, { rejectWithValue }) => {
+  async ({ email, otp, deviceId }, { rejectWithValue }) => {
     try {
       const res = await fetch("/api/method/weassist.api.auth.verify_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, otp: otp, device_id: DEVICE_ID, }),
+        body: JSON.stringify({ user_id: email, otp, device_id: deviceId }),
       });
       const data = await res.json();
 
@@ -65,20 +66,25 @@ const loginSlice = createSlice({
     isAuthenticated: initialAuth.isLoggedIn,
     userToken: initialAuth.token,
     loading: false,
+    profilePic: typeof window !== "undefined" ? localStorage.getItem("user_profile_pic") : null,
     error: null,
-    gender: initialAuth.gender
+    gender: null
   },
   reducers: {
     setLoginField: (state, action) => {
       const { field, value } = action.payload;
       state[field] = value;
     },
+    updateProfilePic: (state, action) => {
+      state.profilePic = action.payload;
+      localStorage.setItem("user_profile_pic", action.payload);
+    },
     logout: (state) => {
       state.isAuthenticated = false;
       state.userToken = null;
-      state.email = "";        
-      state.username = "";   
-      state.otp = "";          
+      state.email = "";
+      state.username = "";
+      state.otp = "";
       state.error = null;
       state.gender = null;
       if (typeof window !== "undefined") {
@@ -103,7 +109,7 @@ const loginSlice = createSlice({
         state.error = null;
       })
       .addCase(verifyLoginOtp.fulfilled, (state, action) => {
-        const { token, email, full_name ,gender} = action.payload.message;
+        const { token, email, full_name, gender } = action.payload.message;
 
         state.loading = false;
         state.isAuthenticated = true;
@@ -117,7 +123,7 @@ const loginSlice = createSlice({
           localStorage.setItem("userToken", token);
           localStorage.setItem("username", full_name);
           localStorage.setItem("email", email);
-          localStorage.setItem("gender",gender)
+          localStorage.setItem("gender", gender)
 
           document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
         }
@@ -125,10 +131,20 @@ const loginSlice = createSlice({
       .addCase(verifyLoginOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        console.log("login verification failed ",action)
+        console.log("login verification failed ", action)
+      })
+      // ── Signup OTP verified → hydrate login state immediately ──
+      .addCase(verifyEmailOtp.fulfilled, (state, action) => {
+        const msg = action.payload?.message;
+        if (!msg?.token) return;
+        state.isAuthenticated = true;
+        state.userToken = msg.token;
+        state.email = msg.email || "";
+        state.username = msg.full_name || msg.first_name || "";
+        state.gender = msg.gender || null;
       });
   },
 });
 
-export const { setLoginField, logout } = loginSlice.actions;
+export const { setLoginField, logout ,updateProfilePic} = loginSlice.actions;
 export default loginSlice.reducer;

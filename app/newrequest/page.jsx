@@ -5,30 +5,33 @@ import { useRouter } from "next/navigation";
 import VerticalStep from "@/components/VerticalStep";
 import { useState } from "react";
 import BouncingDots from "@/components/BouncingDots";
+import { useRequireScanner } from "@/hooks/useRequireScanner";
+
+
 const steps = [
     {
         number: "Step One",
-        title: "Upload Aadhar and PAN of the Insured & Patient to autofill details.",
+        title: "Upload the Aadhaar and PAN card of the patient and insured, then select autofill as needed.",
         isLast: false,
     },
     {
         number: "Step Two",
-        title: "Complete any missing fields in the application.",
+        title: "Complete any remaining mandatory fields and review your application before submitting.",
         isLast: false,
     },
     {
         number: "Step Three",
-        title: "Review and submit for the hospital to process.",
+        title: "Submit your application for the hospital to fill in the hospitalization details.",
         isLast: false,
     },
     {
         number: "Step Four",
-        title: "Verify the info once submitted by the facility.",
+        title: "Verify your hospitalization information and other details so we can move forward smoothly.",
         isLast: false,
     },
     {
         number: "Step Five",
-        title: "Relax while we handle the rest and update you on progress.",
+        title: "Relax while we handle the rest and update you as we progress",
         isLast: true,
     },
 ];
@@ -36,6 +39,7 @@ const steps = [
 export default function GetStarted() {
     const router = useRouter();
     const [isNavigating, setIsNavigating] = useState(false);
+    useRequireScanner();
 
     const handleBack = () => {
         router.back();

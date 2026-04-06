@@ -37,9 +37,9 @@ export default function ScannerPage() {
         permittedHospitalsRef.current = permittedHospitals;
     }, [permittedHospitals]);
 
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(resetAllDetails());
-    },[])
+    }, [])
 
     const setScannedDataSync = (data) => {
         scannedDataRef.current = data;
@@ -73,39 +73,79 @@ export default function ScannerPage() {
         dispatch(fetchHospitals());
     }, [dispatch]);
 
-    const processResult = useCallback((rawValue) => {
+    const processResult = useCallback(async (rawValue) => {
         if (!rawValue) return;
 
         const cleaned = rawValue.trim().replace(/'/g, '"');
-        console.log("the cleaned",cleaned)
+        console.log("the cleaned", cleaned);
 
         try {
             let hospitalId, type, city;
 
             try {
-                const parsed = JSON.parse(cleaned); 
-                
+                const parsed = JSON.parse(cleaned);
                 hospitalId = parsed.hospital;
                 type = parsed.type || parsed.claim_type;
                 city = parsed.city;
-                console.log("the parsed,hospitalid,type,city",parsed,hospitalId,type,city)
+                console.log("parsed QR:", parsed, hospitalId, type, city);
             } catch {
-                console.log("parse failed")
-                hospitalId = cleaned; 
+                console.log("JSON parse failed — treating as plain hospital ID");
+                hospitalId = cleaned;
             }
 
-            const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
+            // All 3 fields are required — any missing = invalid hospital QR
+            if (!hospitalId || !type || !city) {
+                toast.error("Invalid QR code. Please scan a hospital QR code.", {
+                    duration: 4000,
+                    style: { borderRadius: '20px', background: '#fff', color: '#333', fontSize: '14px', fontWeight: 'bold' },
+                });
+                setIsProcessingSync(false);
+                return;
+            }
 
-            setScannedDataSync({
-                hospitalId,
-                hospitalName: match ? match.title : "Unknown Hospital",
-                claim_type: type || "Pre-Auth",
-                city: city || "N/A"
-            });
+            // Fetch hospital directly via API instead of cached Redux list
+            try {
+                const token = typeof window !== 'undefined' ? localStorage.getItem("userToken") : "";
+                const res = await fetch("/api/method/weassist.api.pfa_dashboard.fetch_permitted_hospital", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: token ? `Basic ${token}` : "",
+                    },
+                    body: JSON.stringify({ name: hospitalId })
+                });
+                
+                const data = await res.json();
+                const freshHospital = data?.message?.data?.[0]; // backend usually returns list or exact match
+                
+                // If it isn't returned, fallback to Redux or Unknown
+                const matchName = freshHospital?.title || 
+                                permittedHospitalsRef.current.find(h => h.name === hospitalId)?.title || 
+                                "Unknown Hospital";
+
+                setScannedDataSync({
+                    hospitalId,
+                    hospitalName: matchName,
+                    claim_type: type,
+                    city,
+                });
+            } catch (apiErr) {
+                 // Fallback on network err
+                 const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
+                 setScannedDataSync({
+                     hospitalId,
+                     hospitalName: match ? match.title : "Unknown Hospital",
+                     claim_type: type,
+                     city,
+                 });
+            }
 
             setIsProcessingSync(false);
         } catch (err) {
-            toast.error("Invalid QR: Could not process details.");
+            toast.error("Could not read QR code. Please try again.", {
+                duration: 4000,
+                style: { borderRadius: '20px', background: '#fff', color: '#333', fontSize: '14px', fontWeight: 'bold' },
+            });
             setIsProcessingSync(false);
         }
     }, []);
@@ -243,7 +283,7 @@ export default function ScannerPage() {
 
             <div className="absolute top-0 left-0 right-0 z-[120] flex justify-between items-center px-6 pt-12 pb-4">
                 <h2 className="text-white font-bold text-xl tracking-tight">Scanner</h2>
-                <button onClick={() => router.back()} className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-all">
+                <button onClick={() => router.replace('/dashboard')} className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-all">
                     <LucideX size={22} />
                 </button>
             </div>
@@ -286,16 +326,18 @@ export default function ScannerPage() {
 
                         <div className="space-y-4 mb-8">
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Hospital</span>
-                                <span className="text-gray-900 font-black">{scannedData.hospitalName}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Hospital</span>
+                                <span className="text-gray-900 font-black text-right">{scannedData.hospitalName}</span>
                             </div>
+
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Claim Type</span>
-                                <span className="text-[#1DA1FA] font-black uppercase">{scannedData.claim_type}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Claim Type</span>
+                                <span className="text-[#1DA1FA] font-black uppercase text-right">{scannedData.claim_type}</span>
                             </div>
+
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                <span className="text-gray-500 font-bold text-sm">Location</span>
-                                <span className="text-gray-900 font-black">{scannedData.city}</span>
+                                <span className="text-gray-500 font-bold text-sm flex-shrink-0 mr-4">Location</span>
+                                <span className="text-gray-900 font-black text-right">{scannedData.city}</span>
                             </div>
                         </div>
 

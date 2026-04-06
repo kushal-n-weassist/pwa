@@ -40,7 +40,6 @@ const handleFinalSubmit = async () => {
     });
   } else {
     const createdSSRName = resultAction.payload?.ssr || ssrId;
-    console.log("3. createdSSRName:", createdSSRName);
 
     const successMsg = isNewSSR ? `SSR ${createdSSRName} Created!` : "Request Updated Successfully!";
     toast.success(successMsg, {
@@ -78,7 +77,7 @@ const handleFinalSubmit = async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
-    router.push("/ssr-success");
+    router.push(isNewSSR ? "/ssr-success" : "/ssr-success?mode=update");
   }
 };
 

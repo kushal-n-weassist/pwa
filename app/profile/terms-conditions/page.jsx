@@ -1,11 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Plus } from "lucide-react";
 import { Accordion, AccordionItem } from "@heroui/react";
 import { useSelector } from "react-redux";
 import { selectLegalContent, selectLegalLoading } from "@/features/profile/store/legalSlice";
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 4;
+
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
+}
 
 const parseTermsSections = (html) => {
   if (!html) return { intro: "", sections: [] };
@@ -67,6 +74,74 @@ export default function TermsOfUse() {
     return parseTermsSections(htmlContent);
   }, [htmlContent]);
 
+  // ── Pinch-to-zoom ──────────────────────────────────────────────────
+  const contentRef = useRef(null);
+  const [scale, setScale] = useState(1);
+  const scaleRef = useRef(1);
+  const lastDistRef = useRef(null);
+
+  const getTouchDist = (touches) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const applyScale = useCallback((newScale) => {
+    const clamped = clamp(newScale, MIN_SCALE, MAX_SCALE);
+    scaleRef.current = clamped;
+    setScale(clamped);
+    if (contentRef.current) {
+      contentRef.current.style.transform = `scale(${clamped})`;
+      contentRef.current.style.transformOrigin = "top center";
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        lastDistRef.current = getTouchDist(e.touches);
+        e.preventDefault();
+      }
+    };
+
+    const onTouchMove = (e) => {
+      if (e.touches.length === 2 && lastDistRef.current !== null) {
+        const dist = getTouchDist(e.touches);
+        const delta = dist / lastDistRef.current;
+        applyScale(scaleRef.current * delta);
+        lastDistRef.current = dist;
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      if (e.touches.length < 2) lastDistRef.current = null;
+    };
+
+    const onWheel = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.1 : -0.1;
+        applyScale(scaleRef.current + delta);
+      }
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
+    el.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("wheel", onWheel);
+    };
+  }, [applyScale]);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-roboto font-light">
       <div className="bg-white px-6 pt-12 pb-4 flex items-center justify-between sticky top-0 z-30 border-b border-gray-50">
@@ -77,7 +152,11 @@ export default function TermsOfUse() {
         <div className="w-6" />
       </div>
 
-      <div className="p-6 flex flex-col gap-6 overflow-y-auto pb-10">
+      <div
+        ref={contentRef}
+        className="p-6 flex flex-col gap-6 overflow-y-auto pb-10 will-change-transform"
+        style={{ transformOrigin: "top center" }}
+      >
         {loading ? (
           <div className="flex items-center justify-center h-40">
             <p className="text-gray-400 text-sm">Loading...</p>
@@ -97,9 +176,9 @@ export default function TermsOfUse() {
                 selectionMode="multiple"
                 fullWidth
               >
-                {sections.map((item,index) => (
+                {sections.map((item, index) => (
                   <AccordionItem
-                    key={`section-${index}`} 
+                    key={`section-${index}`}
                     aria-label={item.title}
                     title={
                       <span className="text-white text-[13px] font-bold leading-tight text-left block">
@@ -132,6 +211,17 @@ export default function TermsOfUse() {
           </>
         )}
       </div>
+
+      {scale !== 1 && (
+        <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50">
+          <button
+            onClick={() => applyScale(1)}
+            className="bg-white shadow-lg border border-gray-100 rounded-full px-4 py-2 text-xs text-[#1DA1FA] font-semibold active:opacity-60"
+          >
+            Reset zoom ({Math.round(scale * 100)}%)
+          </button>
+        </div>
+      )}
     </div>
   );
 }
