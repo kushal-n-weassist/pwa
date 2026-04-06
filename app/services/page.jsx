@@ -44,7 +44,7 @@ export default function ServicesPage() {
             dispatch(setSelectedSSR(tempSelectedSSR));
             
             if (action === "stages") {
-                router.push("/verifydetails");
+                router.push("/stages");
             } else {
                 router.push("/details");
             }

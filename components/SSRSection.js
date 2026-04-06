@@ -50,7 +50,7 @@ export default function SSRSection() {
       dispatch(setSelectedSSR(tempSelectedSSR));
 
       if (action === "stages") {
-        router.push("/verifydetails");
+        router.push("/stages");
       } else {
         router.push("/details");
       }

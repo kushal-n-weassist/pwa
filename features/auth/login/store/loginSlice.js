@@ -8,9 +8,10 @@ const getStoredAuth = () => {
       token: localStorage.getItem("userToken") || null,
       username: localStorage.getItem("username") || "",
       email: localStorage.getItem("email") || "",
+      gender: localStorage.getItem("gender") || null,
     };
   }
-  return { isLoggedIn: false, token: null, username: "", email: "" };
+  return { isLoggedIn: false, token: null, username: "", email: "", gender: null };
 };
 
 const initialAuth = getStoredAuth();
@@ -65,7 +66,7 @@ const loginSlice = createSlice({
     userToken: initialAuth.token,
     loading: false,
     error: null,
-    gender:null
+    gender: initialAuth.gender
   },
   reducers: {
     setLoginField: (state, action) => {
@@ -79,6 +80,7 @@ const loginSlice = createSlice({
       state.username = "";   
       state.otp = "";          
       state.error = null;
+      state.gender = null;
       if (typeof window !== "undefined") {
         localStorage.clear();
         document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";

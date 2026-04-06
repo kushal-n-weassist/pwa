@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 export default function useNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const token = useSelector((state) => state.login.userToken);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -15,8 +17,7 @@ export default function useNotifications() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization":
-                "Basic YmU5ZDVlNjIzNmQ5MzMyOmM3OTlhYWI5MTI0YjQ2Nw==",
+              Authorization: token ? `Basic ${token}` : "",
             },
             body: JSON.stringify({ limit: 20 }),
           },
@@ -32,7 +33,7 @@ export default function useNotifications() {
     };
 
     fetchNotifications();
-  }, []);
+  }, [token]);
 
   return { notifications, loading, error };
 }

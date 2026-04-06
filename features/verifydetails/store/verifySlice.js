@@ -81,6 +81,7 @@ const verifySlice = createSlice({
         loading: false,
         error: null,
         isVerified: false,
+        verifiedSSRs: {}, // Dictionary holding explicitly authorized contexts {[ssrName]: true}
     },
     reducers: {
         resetVerifyState: (state) => {
@@ -107,6 +108,11 @@ const verifySlice = createSlice({
             .addCase(verifyDetailsOtp.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            .addCase(submitSSRForVerification.fulfilled, (state, action) => {
+                if (!state.verifiedSSRs) state.verifiedSSRs = {};
+                // Cache explicit SSR validation persistently mapped off payload argument natively
+                state.verifiedSSRs[action.meta.arg] = true;
             });
     },
 });

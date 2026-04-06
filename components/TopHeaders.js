@@ -140,7 +140,7 @@ export default function TopHeader() {
             <div className="flex justify-between items-center">
                 <Link href='/profile' className="flex items-center gap-3 transition-opacity">
                     <Image
-                        src={gender === "female" ? femaleprofile : maleprofile}
+                        src={gender?.toLowerCase() === "female" ? femaleprofile : maleprofile}
                         alt="profile"
                         width={48}
                         height={48}
@@ -152,7 +152,9 @@ export default function TopHeader() {
                     </div>
                 </Link>
                 <div className="bg-white/20 p-2 rounded-full">
-                    <Bell className="text-white" size={24} />
+                    <button className="p-1 text-white" onClick={() => router.push("/notification")}>
+                        <Bell className="text-white" size={24} />
+                    </button>
                 </div>
             </div>
             <div className="flex justify-center">
