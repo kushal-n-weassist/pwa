@@ -10,10 +10,9 @@ export function useRequireScanner() {
   const hospital   = useSelector((state) => state.details.hospital);
   const claimType  = useSelector((state) => state.details.claimType);
   const city       = useSelector((state) => state.details.city);
-  const isUpdate   = useSelector((state) => state.details.isUpdate);
 
   useEffect(() => {
-    if (!isUpdate && (!hospital || !claimType || !city)) {
+    if (!hospital || !claimType || !city) {
       toast.error("Please scan the hospital QR code first.", {
         id: "require-scanner", 
         duration: 4000,

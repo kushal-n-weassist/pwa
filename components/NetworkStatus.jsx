@@ -1,47 +1,16 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { WifiOff, Wifi, AlertTriangle } from "lucide-react";
+import { WifiOff, Wifi } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function NetworkStatus() {
   const [status, setStatus] = useState("online");
   const hideTimer = useRef(null);
-  const pingTimer = useRef(null);
   const router = useRouter();
   const pathname = usePathname();
 
-  const pingServer = async () => {
-    if (!navigator.onLine) return;
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const start = Date.now();
-      await fetch("/favicon.ico?_=" + Date.now(), {
-        method: "HEAD",
-        cache: "no-store",
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      const duration = Date.now() - start;
-      if (duration > 3000) {
-        setStatus("slow");
-        clearTimeout(hideTimer.current);
-        hideTimer.current = setTimeout(() => setStatus("online"), 5000);
-      } else if (status === "slow") {
-        setStatus("online");
-      }
-    } catch {
-      if (navigator.onLine) {
-        setStatus("slow");
-        clearTimeout(hideTimer.current);
-        hideTimer.current = setTimeout(() => setStatus("online"), 5000);
-      }
-    }
-  };
-
   useEffect(() => {
-    // Strict routes that absolutely depend on network API
     const strictOnlineRoutes = [
       "/newrequest",
       "/scanner",
@@ -53,7 +22,9 @@ export default function NetworkStatus() {
     ];
 
     const enforceStrictOnline = () => {
-      const isStrict = strictOnlineRoutes.some(route => window.location.pathname.startsWith(route));
+      const isStrict = strictOnlineRoutes.some(route =>
+        window.location.pathname.startsWith(route)
+      );
       if (isStrict && window.location.pathname !== "/offline") {
         router.push("/offline");
       }
@@ -61,9 +32,7 @@ export default function NetworkStatus() {
 
     const handleOffline = () => {
       clearTimeout(hideTimer.current);
-      clearInterval(pingTimer.current);
       setStatus("offline");
-      // Redirect to /offline ONLY if they are on a strictly online route
       enforceStrictOnline();
     };
 
@@ -71,30 +40,25 @@ export default function NetworkStatus() {
       setStatus("restored");
       clearTimeout(hideTimer.current);
       hideTimer.current = setTimeout(() => setStatus("online"), 3000);
-      pingTimer.current = setInterval(pingServer, 30000);
     };
 
-    // If already offline on mount, check if we need to boot them from a strict route
-    if (!navigator.onLine && status !== "offline") {
+    if (!navigator.onLine) {
       setStatus("offline");
       enforceStrictOnline();
     }
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
-    pingTimer.current = setInterval(pingServer, 30000);
 
     return () => {
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
       clearTimeout(hideTimer.current);
-      clearInterval(pingTimer.current);
     };
-  }, [pathname, status, router]);
+  }, [pathname, router]);
+  
 
   if (status === "online") return null;
-
-  // On /offline page, don't render the banner (page itself is the fallback)
   if (pathname === "/offline") return null;
 
   const variants = {
@@ -103,14 +67,7 @@ export default function NetworkStatus() {
       text: "text-white",
       icon: <WifiOff size={16} />,
       message: "No internet connection",
-      sub: "Redirecting to offline page…",
-    },
-    slow: {
-      bg: "bg-amber-500",
-      text: "text-white",
-      icon: <AlertTriangle size={16} />,
-      message: "Slow connection detected",
-      sub: "Please connect to a better network",
+      sub: "you are offline app working with limited functionality",
     },
     restored: {
       bg: "bg-emerald-500",
@@ -122,6 +79,7 @@ export default function NetworkStatus() {
   };
 
   const v = variants[status];
+  if (!v) return null;
 
   return (
     <div
@@ -139,14 +97,6 @@ export default function NetworkStatus() {
         <span className="text-sm font-semibold leading-tight">{v.message}</span>
         <span className="text-xs opacity-80 leading-tight">{v.sub}</span>
       </div>
-      {status === "slow" && (
-        <button
-          onClick={() => window.location.reload()}
-          className="ml-auto flex-shrink-0 text-xs bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 font-medium transition-colors"
-        >
-          Retry
-        </button>
-      )}
     </div>
   );
 }

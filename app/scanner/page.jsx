@@ -73,7 +73,7 @@ export default function ScannerPage() {
         dispatch(fetchHospitals());
     }, [dispatch]);
 
-    const processResult = useCallback((rawValue) => {
+    const processResult = useCallback(async (rawValue) => {
         if (!rawValue) return;
 
         const cleaned = rawValue.trim().replace(/'/g, '"');
@@ -103,14 +103,42 @@ export default function ScannerPage() {
                 return;
             }
 
-            const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
+            // Fetch hospital directly via API instead of cached Redux list
+            try {
+                const token = typeof window !== 'undefined' ? localStorage.getItem("userToken") : "";
+                const res = await fetch("/api/method/weassist.api.pfa_dashboard.fetch_permitted_hospital", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: token ? `Basic ${token}` : "",
+                    },
+                    body: JSON.stringify({ name: hospitalId })
+                });
+                
+                const data = await res.json();
+                const freshHospital = data?.message?.data?.[0]; // backend usually returns list or exact match
+                
+                // If it isn't returned, fallback to Redux or Unknown
+                const matchName = freshHospital?.title || 
+                                permittedHospitalsRef.current.find(h => h.name === hospitalId)?.title || 
+                                "Unknown Hospital";
 
-            setScannedDataSync({
-                hospitalId,
-                hospitalName: match ? match.title : "Unknown Hospital",
-                claim_type: type,
-                city,
-            });
+                setScannedDataSync({
+                    hospitalId,
+                    hospitalName: matchName,
+                    claim_type: type,
+                    city,
+                });
+            } catch (apiErr) {
+                 // Fallback on network err
+                 const match = permittedHospitalsRef.current.find(h => h.name === hospitalId);
+                 setScannedDataSync({
+                     hospitalId,
+                     hospitalName: match ? match.title : "Unknown Hospital",
+                     claim_type: type,
+                     city,
+                 });
+            }
 
             setIsProcessingSync(false);
         } catch (err) {
@@ -255,7 +283,7 @@ export default function ScannerPage() {
 
             <div className="absolute top-0 left-0 right-0 z-[120] flex justify-between items-center px-6 pt-12 pb-4">
                 <h2 className="text-white font-bold text-xl tracking-tight">Scanner</h2>
-                <button onClick={() => router.back()} className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-all">
+                <button onClick={() => router.replace('/dashboard')} className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center active:scale-90 transition-all">
                     <LucideX size={22} />
                 </button>
             </div>

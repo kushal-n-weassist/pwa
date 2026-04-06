@@ -5,6 +5,8 @@ import InstallPrompt from "@/components/InstallPrompt";
 import NetworkStatus from "@/components/NetworkStatus";
 import SplashScreen from "@/components/SplashScreen";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import AuthGuard from "@/components/AuthGuard";
+
 
 
 const roboto = Roboto({
@@ -15,6 +17,7 @@ const roboto = Roboto({
 
 export const metadata = {
   applicationName: 'Fusion',
+  manifest: '/manifest.webmanifest', 
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -37,11 +40,13 @@ export default function RootLayout({ children }) {
         <Providers>
           <SplashScreen />
           <NetworkStatus />
-          <main className="light text-foreground bg-background">
-            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "placeholder"}>
-              {children}
-            </GoogleOAuthProvider>
-          </main>
+          <AuthGuard>  
+            <main className="light text-foreground bg-background">
+              <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "placeholder"}>
+                {children}
+              </GoogleOAuthProvider>
+            </main>
+          </AuthGuard>  
           <InstallPrompt />
         </Providers>
       </body>

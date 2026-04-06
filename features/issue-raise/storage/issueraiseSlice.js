@@ -4,7 +4,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 export const raiseTicket = createAsyncThunk(
     "ticket/raiseTicket",
-    async ({ ssr_id, reason }, { rejectWithValue, getState }) => {
+    async ({ ssr_id, reason, subject, name, email }, { rejectWithValue, getState }) => {
         try {
             const token = getState().login.userToken;
             const res = await fetch("/api/method/weassist.api.ssr.raise_ticket", {
@@ -13,7 +13,7 @@ export const raiseTicket = createAsyncThunk(
                     "Content-Type": "application/json",
                     Authorization: token ? `Basic ${token}` : "",
                 },
-                body: JSON.stringify({ ssr_id, reason }),
+                body: JSON.stringify({ ssr_id, reason, subject, name, email }),
             });
 
             const data = await res.json();

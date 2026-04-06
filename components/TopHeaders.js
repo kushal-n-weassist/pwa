@@ -24,7 +24,7 @@ const HISTORY_KEY = "ssr_search_history";
 const MAX_HISTORY = 8;
 
 const quickAccessItems = [
-    { id: 1, label: "New Request", icon: NewRequest, w: 95, h: 85, href: '/newrequest' },
+    { id: 1, label: "New Request", icon: NewRequest, w: 95, h: 85, href: '/scanner' },
     { id: 2, label: "Request Summary", icon: RequestSummary, w: 0, h: 95, href: '' },
     { id: 3, label: "Archived Request", icon: archivedrequest, w: 105, h: 105, href: '' },
 ];
@@ -35,9 +35,14 @@ export default function TopHeader() {
     const [searchHistory, setSearchHistory] = useState([]);
     const dispatch = useDispatch();
     const router = useRouter();
-    const { username, gender } = useSelector((state) => state.login);
+    const { username, gender,profilePic } = useSelector((state) => state.login);
 
     const { ssrList } = useSelector((state) => state.dashboard);
+
+    const userImage = useMemo(() => {
+        if (profilePic) return profilePic;
+        return gender === "female" ? femaleprofile : maleprofile;
+    }, [profilePic, gender]);
 
     useEffect(() => {
         try {
@@ -140,7 +145,7 @@ export default function TopHeader() {
             <div className="flex justify-between items-center">
                 <Link href='/profile' className="flex items-center gap-3 transition-opacity">
                     <Image
-                        src={gender === "female" ? femaleprofile : maleprofile}
+                        src={userImage}
                         alt="profile"
                         width={48}
                         height={48}

@@ -4,12 +4,9 @@ export async function POST(request) {
   try {
     const formData = await request.formData();
 
-    // Call the external Digio API from the Next.js backend
     const response = await fetch('https://ext.digio.in:444/v3/client/kyc/analyze/file/idcard', {
       method: 'POST',
       headers: {
-        // We only pass the Authorization header. 
-        // Fetch will automatically set Content-Type with boundary for FormData.
         'Authorization': 'Basic QUlRQ1IyTUc3SVVQUk03RTJGV0JHNTNISkRZS0NXTFk6NFhSM0pMQ1I2TTZSVU4zNUtSMk1XUDRDWTZRN1VOTUc='
       },
       body: formData,
