@@ -9,6 +9,8 @@ import { FaGoogle, FaFacebook, FaLinkedin } from "react-icons/fa";
 import Link from "next/link";
 import { createUser, sendEmailOtp, setField } from "../store/signupSlice";
 import { z } from "zod";
+import { useDeviceId } from "@/hooks/useDeviceId";
+import toast from "react-hot-toast";
 
 const signupSchema = z.object({
   first_name: z
@@ -29,6 +31,7 @@ const signupSchema = z.object({
 export default function SignupForm() {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { deviceId } = useDeviceId();
 
   const { first_name, email, mobile_no, loading } = useSelector(
     (state) => state.signup,
@@ -68,8 +71,11 @@ export default function SignupForm() {
 
     console.log("created result ", createResult);
     if (createUser.fulfilled.match(createResult)) {
-      await dispatch(sendEmailOtp({ email }));
+      await dispatch(sendEmailOtp({ email, deviceId }));
       router.push(`/auth/signup/verify-otp?email=${encodeURIComponent(email)}`);
+    } else {
+      const errMsg = createResult.payload || "Sign up failed. Please try again.";
+      toast.error(String(errMsg));
     }
   };
 

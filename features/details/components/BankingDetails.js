@@ -28,10 +28,7 @@ const handleChange = (field, value) => {
   }
 };
 
-  useEffect(() => {
-    if (bankError) toast.error(bankError);
-  }, [bankError]);
-
+ 
   useEffect(() => {
     if (bankSuccess) toast.success(bankSuccess);
   }, [bankSuccess]);
@@ -100,7 +97,8 @@ const handleChange = (field, value) => {
         <div>
           <CustomLabel>Branch Name</CustomLabel>
           <Input
-            isDisabled={isReadOnly} //
+
+            isDisabled={true}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
             classNames={inputStyles}

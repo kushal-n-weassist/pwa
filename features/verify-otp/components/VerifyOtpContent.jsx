@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { setLoginField, verifyLoginOtp } from "@/features/auth/login/store/loginSlice";
 import toast from "react-hot-toast";
 import BouncingDots from "@/components/BouncingDots";
+import { useDeviceId } from "@/hooks/useDeviceId";
 
 export default function VerifyOtpContent() {
     const dispatch = useDispatch();
@@ -15,13 +16,14 @@ export default function VerifyOtpContent() {
 
     const reduxEmail = useSelector((state) => state.login.email);
     const email = reduxEmail || searchParams.get("email");
+    const { deviceId } = useDeviceId();
 
     const { otp, loading } = useSelector((state) => state.login);
 
     const handleVerifyLogin = async () => {
         if (otp.length !== 6) return;
 
-        const result = await dispatch(verifyLoginOtp({ email, otp }));
+        const result = await dispatch(verifyLoginOtp({ email, otp, deviceId }));
 
         if (verifyLoginOtp.fulfilled.match(result)) {
             router.push("/dashboard");

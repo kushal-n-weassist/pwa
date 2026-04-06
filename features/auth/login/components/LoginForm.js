@@ -13,6 +13,7 @@ import BouncingDots from "@/components/BouncingDots";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useLinkedIn } from "react-linkedin-login-oauth2";
 import FacebookLogin from "@greatsumini/react-facebook-login";
+import { useDeviceId } from "@/hooks/useDeviceId";
 
 const FRAPPE_URL = process.env.NEXT_PUBLIC_FRAPPE_URL;
 
@@ -28,6 +29,7 @@ export default function LoginForm() {
     const router = useRouter();
 
     const { email, loading } = useSelector((state) => state.login);
+    const { deviceId } = useDeviceId();
     const [emailError, setEmailError] = useState("");
     const [googleLoading, setGoogleLoading] = useState(false);
     const [linkedInLoading, setLinkedInLoading] = useState(false);
@@ -149,7 +151,7 @@ export default function LoginForm() {
         setEmailError("");
 
         try {
-            await dispatch(generateLoginOtp({ email })).unwrap();
+            await dispatch(generateLoginOtp({ email, deviceId })).unwrap();
             toast.success(`OTP sent to ${email}`);
             router.push(`/auth/login/verify-otp?email=${encodeURIComponent(email)}`);
         } catch (err) {

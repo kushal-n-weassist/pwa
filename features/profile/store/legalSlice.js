@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchLegalContent = createAsyncThunk(
     "legal/fetchLegalContent",
-    async (field, { rejectWithValue,getState }) => {
+    async (field, { getState }) => {
         try {
             const token = getState().login?.userToken;
             const response = await fetch(
@@ -14,22 +14,21 @@ export const fetchLegalContent = createAsyncThunk(
                         "Content-Type": "application/json",
                         Authorization: token ? `Basic ${token}` : "",
                     },
-
-
                     body: JSON.stringify({ field }),
                 }
             );
 
             if (!response.ok) {
-                const errorData = await response.json();
-                return rejectWithValue(errorData?.message || "Failed to fetch content");
+                // Permission denied or other error — return empty so profile still loads
+                return { field, data: null };
             }
 
             const data = await response.json();
             return { field, data };
 
-        } catch (error) {
-            return rejectWithValue(error.message || "Failed to fetch content");
+        } catch {
+            // Network error — return empty so profile still loads
+            return { field, data: null };
         }
     }
 );

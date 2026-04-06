@@ -15,6 +15,19 @@ export function validatePatient(data) {
   return patientSchema.safeParse(data).success;
 }
 
+// Utility to convert DD/MM/YYYY (OCR) to YYYY-MM-DD (Input Date)
+const formatOcrDate = (dateStr) => {
+  if (!dateStr || !dateStr.includes("/")) return dateStr;
+  const parts = dateStr.split("/");
+  if (parts.length === 3) {
+    // If it's already YYYY/MM/DD, reverse it carefully
+    if (parts[0].length === 4) return parts.join("-");
+    // If it's DD/MM/YYYY, convert to YYYY-MM-DD
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateStr;
+};
+
 export default function PatientDetails() {
   const dispatch = useDispatch();
 
@@ -27,12 +40,13 @@ export default function PatientDetails() {
   const prevPincodeRef = useRef(null);
 
   const handleChange = (field, value) => {
-    dispatch(updateField({ section: "patient", field, value }));
+    // If the field is dob, ensure we are storing it in a format the HTML input likes
+    const finalValue = field === "dob" ? formatOcrDate(value) : value;
+    dispatch(updateField({ section: "patient", field, value: finalValue }));
   };
 
   useEffect(() => {
     const currentPincode = patientData.pincode;
-    console.log("the current pincode ",currentPincode);
     if (
       currentPincode &&
       currentPincode.length === 6 &&

@@ -1,20 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Shield, FileText, Settings, Phone, LogOut, ChevronRight } from "lucide-react";
+import { ChevronLeft, Shield, FileText, Settings, Phone, LogOut, ChevronRight, Camera } from "lucide-react"; 
 import { Button, Avatar } from "@heroui/react";
-import { logout } from "@/features/auth/login/store/loginSlice";
+import { logout, updateProfilePic } from "@/features/auth/login/store/loginSlice"; 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import maleprofile from '@/public/maleprofile.svg';
 import femaleprofile from '@/public/femaleprofile.svg';
 import { fetchLegalContent, selectLegalContent, selectLegalLoading } from "@/features/profile/store/legalSlice";
-
-
-
+import toast from "react-hot-toast"; 
 
 const menuItems = [
   {
@@ -48,17 +46,17 @@ const menuItems = [
 ];
 
 export default function ProfilePage() {
-
   const state = useSelector((state) => state);
-
   const login = useSelector((state) => state.login);
   const router = useRouter();
   const dispatch = useDispatch();
+  
+  // NEW: Ref for the hidden file input
+  const fileInputRef = useRef(null);
 
   const handleLogout = () => {
     dispatch(logout());
     router.push('/auth/login');
-
   };
 
   useEffect(() => {
@@ -67,16 +65,34 @@ export default function ProfilePage() {
     dispatch(fetchLegalContent("contact_us"));
   }, []);
 
-
-
-
   React.useEffect(() => {
     if (!login.isAuthenticated) {
       router.replace('/auth/login');
     }
   }, [login.isAuthenticated, router]);
-  const { username, email, gender } = login;
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image size should be less than 2MB");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        dispatch(updateProfilePic(base64String)); 
+        toast.success("Profile picture updated!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const { username, email, gender, profilePic } = login; // Added profilePic
+
+  // NEW: Logic for image source priority
+  const displayImage = profilePic || (gender === "female" ? femaleprofile : maleprofile);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative font-sans">
@@ -90,18 +106,37 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex flex-col items-center gap-3 z-10">
-          <Image
-            src={gender === "female" ? femaleprofile : maleprofile}
-            alt="profile"
-            width={112}
-            height={112}
-            className="w-28 h-28 rounded-full border-4 border-white/20 flex-shrink-0"
-          />
+          {/* NEW: Clickable container for image upload */}
+          <div 
+            className="relative cursor-pointer group" 
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Image
+              src={displayImage}
+              alt="profile"
+              width={112}
+              height={112}
+              className="w-28 h-28 rounded-full border-4 border-white/20 flex-shrink-0 object-cover"
+            />
+            {/* NEW: Camera icon overlay */}
+            <div className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg border border-gray-100 group-active:scale-90 transition-transform">
+              <Camera size={18} className="text-[#1DA1FA]" />
+            </div>
+            
+            {/* NEW: Hidden Input File */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/*"
+              className="hidden"
+            />
+          </div>
+
           <div className="text-center">
             <h2 className="text-xl font-bold text-white">{username}</h2>
             <p className="text-sm text-white/80">{email}</p>
           </div>
-         
         </div>
       </div>
 

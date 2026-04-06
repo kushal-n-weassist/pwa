@@ -108,10 +108,10 @@ export default function FillDetailsLayout({ step, onBack, onNext, children }) {
                 </div>
                 <div className="flex flex-col">
                   <p className="text-[#1DA1FA] text-[13px] font-bold">
-                    Viewing Submitted Request
+                    View Screen Only
                   </p>
                   <p className="text-blue-600/70 text-[11px] font-medium">
-                    This information is currently available here for your reference.
+                    This SSR is submitted and cannot be edited.
                   </p>
                 </div>
               </div>

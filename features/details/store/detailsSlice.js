@@ -19,6 +19,10 @@ export const submitSSR = createAsyncThunk(
       const token = getState().login?.userToken;
       const state = getState().details;
 
+      const isSame = state.insured.isSameAsPatient;
+      const insuredSrc = isSame ? state.patient : state.insured;
+      const addressSrc = isSame ? state.patient : state.address;
+
       const payload = {
         hospital: state.hospital,
         claim_type: state.claimType,
@@ -33,10 +37,9 @@ export const submitSSR = createAsyncThunk(
         patient_address_line1: state.patient.address1,
         patient_address_line2: state.patient.address2,
 
-
-        insured_first_name: state.insured.fullName,
-        insured_dob: state.insured.dob,
-        insured_gender: toTitleCase(state.insured.gender),
+        insured_first_name: insuredSrc.fullName,
+        insured_dob: insuredSrc.dob,
+        insured_gender: toTitleCase(insuredSrc.gender),
         insured_mobile: state.identity.mobileNumber,
         insured_email: state.identity.email,
         insured_pan: state.identity.panNumber,
@@ -46,12 +49,12 @@ export const submitSSR = createAsyncThunk(
         insured_company_name: state.insured.companyName,
         insured_employement_since: state.insured.employmentSince,
 
-        insured_pin_code: state.address.pincode,
-        insured_area: state.address.area,
-        insured_city: state.address.city,
-        insured_state: state.address.state,
-        insured_address_line1: state.address.address1,
-        insured_address_line2: state.address.address2,
+        insured_pin_code: addressSrc.pincode,
+        insured_area: addressSrc.area,
+        insured_city: addressSrc.city,
+        insured_state: addressSrc.state,
+        insured_address_line1: addressSrc.address1,
+        insured_address_line2: addressSrc.address2,
 
         insurance_company: state.policy.insuranceCompany,
         tpa: state.policy.tpa,
@@ -69,8 +72,8 @@ export const submitSSR = createAsyncThunk(
         ifsc_code: state.banking.ifscCode,
         holder_name: state.banking.accountHolderName,
 
-        same_as_insured: state.insured.same_as_insured ?? 0,
-        same_as_patient: state.insured.same_as_insured ?? 0,
+        same_as_insured: isSame ? 1 : 0,
+        same_as_patient: isSame ? 1 : 0,
 
         emergency_name_1: state.identity.emergencyName1,
         emergency_contact_1: state.identity.emergencyNumber1,
@@ -105,6 +108,10 @@ export const updateSSR = createAsyncThunk(
       const token = getState().login?.userToken;
       const state = getState().details;
 
+      const isSame = state.insured.isSameAsPatient;
+      const insuredSrc = isSame ? state.patient : state.insured;
+      const addressSrc = isSame ? state.patient : state.address;
+
       const payload = {
         name: ssrName,
         hospital: state.hospital,
@@ -120,9 +127,9 @@ export const updateSSR = createAsyncThunk(
         patient_address_line1: state.patient.address1,
         patient_address_line2: state.patient.address2,
         bankSuccess: null,
-        insured_first_name: state.insured.fullName,
-        insured_dob: state.insured.dob,
-        insured_gender: toTitleCase(state.insured.gender),
+        insured_first_name: insuredSrc.fullName,
+        insured_dob: insuredSrc.dob,
+        insured_gender: toTitleCase(insuredSrc.gender),
         insured_mobile: state.identity.mobileNumber,
         insured_email: state.identity.email,
         insured_pan: state.identity.panNumber,
@@ -132,14 +139,15 @@ export const updateSSR = createAsyncThunk(
         insured_company_name: state.insured.companyName,
         insured_employement_since: state.insured.employmentSince,
 
-        insured_pin_code: state.address.pincode,
-        insured_area: state.address.area,
-        insured_city: state.address.city,
-        insured_state: state.address.state,
-        insured_address_line1: state.address.address1,
-        insured_address_line2: state.address.address2,
+        insured_pin_code: addressSrc.pincode,
+        insured_area: addressSrc.area,
+        insured_city: addressSrc.city,
+        insured_state: addressSrc.state,
+        insured_address_line1: addressSrc.address1,
+        insured_address_line2: addressSrc.address2,
 
-        same_as_insured: state.insured.same_as_insured ?? 0,
+        same_as_insured: isSame ? 1 : 0,
+        same_as_patient: isSame ? 1 : 0,
         insurance_company: state.policy.insuranceCompany,
         tpa: state.policy.tpa,
         policy_number: state.policy.policyNumber,
@@ -387,7 +395,6 @@ export const detailsSlice = createSlice({
       state.claimType = d.claim_type;
       state.city = d.city;
       state.docStatus = d.docstatus;
-      state.isUpdate = true;
 
       state.hospital = d.hospital;
       state.name = d.name;
@@ -433,7 +440,7 @@ export const detailsSlice = createSlice({
       const isNamesMatch = d.patient_first_name && d.patient_first_name === d.insured_first_name;
       const isDobMatch = d.patient_dob && d.patient_dob === d.insured_dob;
       const sameAsVal = d.same_as_insured || d.same_as_patient || (isNamesMatch && isDobMatch ? 1 : 0);
-      
+
       state.insured = {
         isSameAsPatient: !!sameAsVal && sameAsVal !== 0,
         same_as_insured: sameAsVal ? 1 : 0,
@@ -470,14 +477,25 @@ export const detailsSlice = createSlice({
         memberId: d.member_id,
       };
 
-      state.address = {
-        pincode: d.insured_pin_code,
-        area: d.insured_area,
-        city: d.insured_city,
-        state: d.insured_state,
-        address1: d.insured_address_line1,
-        address2: d.insured_address_line2,
-      };
+      // If same-as-patient, backend returns null for insured address — use patient address instead
+      const isSameOnLoad = !!sameAsVal && sameAsVal !== 0;
+      state.address = isSameOnLoad
+        ? {
+            pincode: d.patient_pin_code,
+            area: d.patient_area,
+            city: d.patient_city,
+            state: d.patient_state,
+            address1: d.patient_address_line1,
+            address2: d.patient_address_line2,
+          }
+        : {
+            pincode: d.insured_pin_code,
+            area: d.insured_area,
+            city: d.insured_city,
+            state: d.insured_state,
+            address1: d.insured_address_line1,
+            address2: d.insured_address_line2,
+          };
 
       state.banking = {
         accountNumber: d.account_no,
@@ -529,8 +547,9 @@ export const detailsSlice = createSlice({
       })
       .addCase(validateBank.fulfilled, (state, action) => {
         state.isValidatingBank = false;
-        state.bankSuccess = action.payload.message;
-        state.banking.bankName = action.payload.message;
+        state.bankSuccess = action.payload.bank;
+        state.banking.bankName = action.payload.bank;
+        state.banking.branchName = action.payload.branch;
       })
       .addCase(validateBank.rejected, (state, action) => {
         state.isValidatingBank = false;

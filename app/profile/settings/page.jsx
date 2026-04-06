@@ -26,26 +26,16 @@ export default function SettingsPage() {
   const handleClearCache = async () => {
     setClearing("cache");
     try {
-      // 1. Wipe all Cache Storage (Workbox pages, assets, images)
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
-      
-      // 2. Unregister Service Workers to ensure fresh fetch
-      if ("serviceWorker" in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-          await registration.unregister();
-        }
+      if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        const channel = new MessageChannel();
+        navigator.serviceWorker.controller.postMessage({ type: "CLEAR_CACHE" }, [channel.port2]);
       }
-
-      toast.success("Cache cleared! Reloading...", { duration: 1500 });
-      
-      // 3. Force hard reload from server
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      toast.success("Cache cleared successfully!");
     } catch {
       toast.error("Failed to clear cache");
+    } finally {
       setClearing(null);
     }
   };
@@ -76,21 +66,13 @@ export default function SettingsPage() {
     try {
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
-      
-      if ("serviceWorker" in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-          await registration.unregister();
-        }
-      }
-
       sessionStorage.clear();
       dispatch(logout());
-      toast.success("Everything cleared! Reloading...", { duration: 1500 });
+      toast.success("cache cleared", { duration: 1500 });
       setTimeout(() => {
         router.push("/auth/login");
-        setTimeout(() => window.location.reload(), 200);
-      }, 1200);
+        window.location.reload();
+      }, 1600);
     } catch {
       toast.error("Something went wrong");
       setClearing(null);
