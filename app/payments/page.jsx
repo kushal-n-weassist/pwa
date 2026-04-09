@@ -55,7 +55,6 @@ export default function PaymentsPage() {
                             <ChevronLeft className="rotate-180 text-gray-400" size={20} />
                         </button>
 
-                        {/* Payment List */}
                         <div>
                             <h2 className="mb-3 px-1 text-lg font-bold text-gray-800">Payments</h2>
                             <div className="overflow-hidden rounded-2xl bg-white px-4 shadow-sm ring-1 ring-black/5">

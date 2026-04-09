@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateField, validateBank,clearBankError } from "../store/detailsSlice";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-
-
+ 
+ 
 const CustomLabel = ({ children }) => (
   <label className="text-[13px] font-bold text-gray-900 mb-1 block">
     {children}
@@ -12,53 +12,51 @@ const CustomLabel = ({ children }) => (
 );
 export default function BankingDetails() {
   const dispatch = useDispatch();
-
+ 
   const {
     banking: bankingData,
     isValidatingBank,
     bankError,
     docStatus,
     bankSuccess,
-
+ 
   } = useSelector((state) => state.details);
-
+ 
   const isReadOnly = docStatus === 1;
-
+ 
 const handleChange = (field, value) => {
   const formattedValue = field === "ifscCode" ? value.toUpperCase() : value;
   dispatch(updateField({ section: "banking", field, value: formattedValue }));
-
+ 
   if (field === "ifscCode") {
     dispatch(updateField({ section: "banking", field: "bankName", value: "" }));
-    dispatch(clearBankError()); 
+    dispatch(clearBankError());
   }
 };
-
+ 
  
   useEffect(() => {
     if (bankSuccess) toast.success(bankSuccess);
   }, [bankSuccess]);
-  const handleBlur = (field, currentValue) => {
-    if (isReadOnly) return;
-
   useEffect(() => {
     if (bankError) toast.error(bankError);
   }, [bankError]);
-
+ 
   const handleBlur = (field, currentValue) => {
+    if (isReadOnly) return;
     if (field === "ifscCode" && currentValue?.length === 11) {
       dispatch(validateBank({ ifsc: currentValue }));
     }
   };
-
+ 
   const inputStyles = {
     label: "hidden",
     inputWrapper: "heroui-input-custom",
     input: "heroui-input-field",
     innerWrapper: "h-full flex items-center py-0"
   };
-
-
+ 
+ 
   return (
     <div className="flex flex-col gap-3">
       <div className="mb-1">
@@ -69,7 +67,7 @@ const handleChange = (field, value) => {
           Fill in all the banking details.
         </p>
       </div>
-
+ 
       <div className="flex flex-col gap-4">
         <div>
           <CustomLabel>IFSC Code</CustomLabel>
@@ -81,10 +79,10 @@ const handleChange = (field, value) => {
             value={bankingData.ifscCode || ""}
             onChange={(e) => handleChange("ifscCode", e.target.value)}
             onBlur={(e) => handleBlur("ifscCode", e.target.value)}
-
+ 
           />
         </div>
-
+ 
         <div>
           <CustomLabel>Bank Name</CustomLabel>
           <Input
@@ -96,11 +94,11 @@ const handleChange = (field, value) => {
             onChange={(e) => handleChange("bankName", e.target.value)}
           />
         </div>
-
+ 
         <div>
           <CustomLabel>Branch Name</CustomLabel>
           <Input
-
+ 
             isDisabled={true}
             placeholder="XXXXXXXXXXXXXX"
             variant="bordered"
@@ -109,7 +107,7 @@ const handleChange = (field, value) => {
             onChange={(e) => handleChange("branchName", e.target.value)}
           />
         </div>
-
+ 
         <div>
           <CustomLabel>Account Number</CustomLabel>
           <Input
@@ -122,7 +120,7 @@ const handleChange = (field, value) => {
             onChange={(e) => handleChange("accountNumber", e.target.value)}
           />
         </div>
-
+ 
         <div>
           <CustomLabel>Account Holder Name</CustomLabel>
           <Input

@@ -6,7 +6,12 @@ import { fetchStageDetails, fetchSSRBlockAmount, fetchCARStatus, clearStages } f
 
 export default function StagesFetchWrapper({ ssrId, children }) {
     const dispatch = useDispatch();
-    const { stagesData, blockAmount, carStatus, loading, error } = useSelector((state) => state.stages);
+    const state = useSelector((state) => state.stages)
+    console.log("the stages data ",state)
+    const all = useSelector((state)=>state);
+    console.log("over all state ",all);
+    const { stagesData, blockAmount, carStatus, loading, error } = state;
+    
 
     useEffect(() => {
         if (ssrId) {

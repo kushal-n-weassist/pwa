@@ -44,7 +44,8 @@ export const sendEmailOtp = createAsyncThunk(
       const res = await fetch("/api/method/weassist.api.auth.generate_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, device_id: deviceId }),
+        // body: JSON.stringify({ user_id: email, device_id: deviceId }),
+        body:JSON.stringify({user_id:email,device_id:'ab8ffb9b500640c0a1973ca05115d1a3'})
       });
       if (!res.ok) throw await res.json();
       return await res.json();
@@ -61,7 +62,9 @@ export const verifyEmailOtp = createAsyncThunk(
       const res = await fetch("/api/method/weassist.api.auth.verify_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, otp, device_id: deviceId }),
+        // body: JSON.stringify({ user_id: email, otp, device_id: deviceId }),
+        body:JSON.stringify({user_id:email,otp,device_id:'ab8ffb9b500640c0a1973ca05115d1a3'})
+
       });
       if (!res.ok) throw await res.json();
       return await res.json();

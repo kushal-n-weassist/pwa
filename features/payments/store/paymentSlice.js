@@ -175,3 +175,4 @@ const paymentSlice = createSlice({
 
 export const { clearPayment } = paymentSlice.actions;
 export default paymentSlice.reducer;
+  

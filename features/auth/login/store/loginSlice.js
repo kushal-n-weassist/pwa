@@ -24,7 +24,10 @@ export const generateLoginOtp = createAsyncThunk(
       const res = await fetch("/api/method/weassist.api.auth.generate_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, device_id: deviceId }),
+        // body: JSON.stringify({ user_id: email, device_id: deviceId }),
+        body:JSON.stringify({user_id:email,device_id:'3fd6eb18ba049a5b3fb4c785d2bcfa7c'})
+        // body:JSON.stringify({user_id:email,device_id:'47338d84b6026ed93a75e1571bd5e619'})
+
       });
       const data = await res.json();
       if (data.message?.success === false) return rejectWithValue(data.message.message);
@@ -42,7 +45,11 @@ export const verifyLoginOtp = createAsyncThunk(
       const res = await fetch("/api/method/weassist.api.auth.verify_otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: email, otp, device_id: deviceId }),
+        // body: JSON.stringify({ user_id: email, otp, device_id: deviceId }),
+        body:JSON.stringify({user_id:email,otp,device_id:'3fd6eb18ba049a5b3fb4c785d2bcfa7c'})
+        // body:JSON.stringify({user_id:email,otp,device_id:'47338d84b6026ed93a75e1571bd5e619'})
+
+   
       });
       const data = await res.json();
 

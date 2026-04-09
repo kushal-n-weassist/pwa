@@ -10,6 +10,10 @@ import uploadReducer from "@/features/upload/store/uploadSlice";
 import legalReducer from "@/features/profile/store/legalSlice";
 import verifyReducer from "@/features/verifydetails/store/verifySlice";
 import ticketReducer from "@/features/issue-raise/storage/issueraiseSlice";
+import stagesReducer from "@/features/stages/storage/stagesSlice";
+import paymentReducer from "@/features/payments/store/paymentSlice";
+import fintechReducer from "@/features/fintech-partners/store/fintechSlice";
+import scannerReducer from "@/features/scannner/store/scannerSlice";
 import { digioApi } from "./digioApi";
 
 const dashboardPersistConfig = {
@@ -27,6 +31,10 @@ const rootReducer = combineReducers({
   legal: legalReducer,
   verify: verifyReducer,
   ticket:ticketReducer,
+  stages: stagesReducer,
+  payments: paymentReducer,
+  fintech: fintechReducer,
+  scanner: scannerReducer,
   [digioApi.reducerPath]: digioApi.reducer,
 });
 

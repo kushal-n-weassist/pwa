@@ -96,7 +96,7 @@ export default function FillDetailsLayout({ step, onBack, onNext, children }) {
           />
         </div>
       )}
-      <div className={`p-6 flex-grow ${isPreviewPage ? 'pb-6' : 'pb-32'}`}>
+      <div className="p-6 flex-grow pb-32">
         <Card className="shadow-none border border-gray-100 rounded-[32px] overflow-visible bg-white">
           <CardBody className="p-6 gap-6">
             {!isPreviewPage && <HorizontalStepper currentStep={step} />}

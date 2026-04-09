@@ -172,7 +172,7 @@ export default function StagesPage() {
                                         stage.description = "OTP Verification is completed.";
                                         stage.actionLabel = "Completed";
                                         stage.actionDisabled = true;
-                                        stage.onAction = () => { }; // Dummy to satisfy hasAction
+                                        stage.onAction = () => { }; 
                                     } else {
                                         stage.description = "Please complete OTP verification to proceed to the next stage.";
                                         stage.actionLabel = "Verify Details";
